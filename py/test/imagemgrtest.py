@@ -8,7 +8,11 @@ from sqlitedb.imagemgr import ImageMgr
 class ImageMgrTestCase(unittest.TestCase):
     def setUp(self):
         self.mgr = ImageMgr()
-        self.mgr.init_with_path(":memory:")
+        self.mgr.init_with_path(":memory")
+        try:
+            self.mgr.open()
+        except sqlite3.OperationalError, err:
+            print str(err)
 
     def tearDown(self):
         self.mgr.close()
@@ -16,10 +20,9 @@ class ImageMgrTestCase(unittest.TestCase):
     def test_db_open(self):
         self.assertTrue(self.mgr.open())
 
-    def test_create_table(self):
+    def test_create_update(self):
         sql = """CREATE TABLE stocks
             (date text, trans text, symbol text, qty real, price real)"""
-        self.mgr.open()
         self.assertTrue(self.mgr.create_db_table(sql))
         sql = """INSERT INTO stocks VALUES ('2016-06-22', "BUY", "RHAT", 100, 34.5) """
         self.mgr.insert_db_row(sql)

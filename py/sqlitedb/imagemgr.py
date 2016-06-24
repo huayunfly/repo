@@ -32,13 +32,12 @@ class ImageMgr(object):
         """Open database using path"""
         if self._conn is not None:
             return True
-        self._conn = sqlite3.connect(self.sqlpath)
-        if self._conn is not None:
-            return True
-        else:
-            print "Opening database %r failed" % self._conn
-            logging.debug("Opening database %r failed", self._conn)
+        try:
+            self._conn = sqlite3.connect(self.sqlpath)
+        except sqlite3.OperationalError, err:
+            logging.debug(str(err))
             return False
+        return True
 
     def close(self):
         """Close the database
@@ -62,12 +61,15 @@ class ImageMgr(object):
         {NULL: None, INTEGER: int or long, REAL: float, TEXT: depends on text_factory,
         unicode by default, BLOB: buffer}
         """
-        c = self._conn.cursor()
-        res = c.execute(sql)
-        if res is None:
+        if self._conn is None:
             return False
-        else:
-            return True
+        try:
+            c = self._conn.cursor()
+            c.execute(sql)
+        except sqlite3.OperationalError, err:
+            logging.debug(str(err))
+            return False
+        return True
 
     def insert_db_row(self, sql):
         """Insert a row in db"""
