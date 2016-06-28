@@ -3,7 +3,7 @@ __author__ = 'yun_hua'
 import sqlite3
 import logging
 
-class ImageMgr(object):
+class WordsMgr(object):
     """Manage images with words relationship in database,
        including create, read, update, delete.
     """

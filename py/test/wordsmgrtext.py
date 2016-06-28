@@ -3,12 +3,12 @@ __author__ = 'yun_hua'
 
 import unittest
 import sqlite3
-from sqlitedb.imagemgr import ImageMgr
+from sqlitedb.wordsmgr import WordsMgr
 
 
-class ImageMgrTestCase(unittest.TestCase):
+class WordsMgrTestCase(unittest.TestCase):
     def setUp(self):
-        self.mgr = ImageMgr()
+        self.mgr = WordsMgr()
         self.mgr.init_with_path(":memory:")
         try:
             self.mgr.open()
