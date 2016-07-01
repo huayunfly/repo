@@ -1,19 +1,33 @@
-__author__ = 'yun_hua'
-
 import sqlite3
 import logging
+from xml.dom.minidom import parse
+
+__author__ = 'yun_hua'
 
 class WordsMgr(object):
     """Manage images with words relationship in database,
        including create, read, update, delete.
     """
-    def init_with_path(self, path):
-        # assert(sqlite3_threadsafe)
-        self._databasePath = path
+    def init_with_path(self, dbpath, xmlpath, imagedir):
+        assert dbpath is not None, xmlpath is not None
+        assert imagedir is not None
+        if dbpath is None or xmlpath is None or imagedir is None:
+            raise ValueError, "None parameters"
+        self._databasePath = dbpath
+        self._xmlPath = xmlpath
+        self._imageDir = imagedir
+        if self._dom is None:
+            self._dom = parse(self.xmlpath)
+            assert self._dom.documentElement.tagName == "words"
 
     def __init__(self):
         self._databasePath = None
         self._conn = None
+        self._xmlPath = None
+        self._dom = None
+        self._sqladdtable = None
+        self._sqladdrow = None
+        self._imageDir = None
 
     @property
     def sqlpath(self):
@@ -23,6 +37,39 @@ class WordsMgr(object):
     def sqlpath(self, value):
         if value is not None:
             self._databasePath = value
+
+    @property
+    def xmlpath(self):
+        return self._xmlPath
+
+    @xmlpath.setter
+    def xmlpath(self, value):
+        if value is not None:
+            self._xmlPath = value
+
+    @property
+    def sqladdtable(self):
+        return self._sqladdtable
+
+    @sqladdtable.setter
+    def sqladdtable(self, value):
+        if value is not None:
+            self._sqladdtable = value
+
+    @property
+    def sqladdrow(self):
+        return self._sqladdrow
+
+    @sqladdrow.setter
+    def sqladdrow(self, value):
+        if value is not None:
+            self._sqladdrow = value
+
+    def row_value(self):
+        if self._dom is None:
+            return None
+        else:
+            c = self._dom.childNodes[0].nextSibling
 
     @staticmethod
     def sqlite3_version():
@@ -48,7 +95,7 @@ class WordsMgr(object):
         self._conn.close()
         return True
 
-    def create_db_table(self, sql):
+    def create_db_table(self):
         """sql e.g. "CREATE TABLE stocks
              (date text, trans text, symbol text, qty real, price real)"
         SQLite natively supports the following types: NULL, INTEGER, REAL, TEXT, BLOB.
@@ -65,17 +112,51 @@ class WordsMgr(object):
             return False
         try:
             c = self._conn.cursor()
-            c.execute(sql)
+            c.execute(self.sqladdtable)
         except sqlite3.OperationalError, err:
             logging.debug(str(err))
             return False
         return True
 
-    def insert_db_row(self, sql):
+    def insert_db_rows(self, params):
+        """Insert some rows in db"""
+        c = self._conn.cursor()
+        c.executemany(self.sqladdrow, params)
+        self._conn.commit()
+
+    def insert_db_row(self, param):
         """Insert a row in db"""
         c = self._conn.cursor()
-        c.execute(sql)
+        c.execute(self.sqladdrow, param)
         self._conn.commit()
+
+    def rowparams_word(self):
+        """Build word database row params from xml in the fixed scheme"""
+        elements = self._dom.documentElement.getElementsByTagName("item")
+        params = []
+        for element in elements:
+            attrs = (element.getAttribute('word'),
+                     element.getAttribute('us_phonetic'),
+                     element.getAttribute('uk_phonetic'),
+                     element.getAttribute('chs'),
+                     element.getAttribute('chs_phonetic'),
+                     int(element.getAttribute('category'))
+                     )
+            params.append(attrs)
+        return params
+
+    def build_image_db(self):
+        """Build image database"""
+        elements = self._dom.documentElement.getElementsByTagName("item")
+        for element in elements:
+            attr = (element.getAttribute('word'),)
+            path = self._imageDir + element.getAttribute('category') + '/' + element.getAttribute('word') + '.png'
+            f = open(path, 'rb')
+            try:
+                param = (element.getAttribute('word'), f.read())
+                self.insert_db_row(param)
+            finally:
+                f.close()
 
     def query_db(self, query, params):
         """Query row, update db using sql.
