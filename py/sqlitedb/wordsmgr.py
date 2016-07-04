@@ -153,7 +153,8 @@ class WordsMgr(object):
             path = self._imageDir + element.getAttribute('category') + '/' + element.getAttribute('word') + '.png'
             f = open(path, 'rb')
             try:
-                param = (element.getAttribute('word'), f.read())
+                b = buffer(f.read())
+                param = (element.getAttribute('word'), b)
                 self.insert_db_row(param)
             finally:
                 f.close()

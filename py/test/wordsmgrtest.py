@@ -40,6 +40,8 @@ class WordsMgrTestCase(unittest.TestCase):
     def test_create_image_db(self):
         self.mgr.sqladdtable = 'CREATE TABLE image_lib (word text, image blob)'
         self.assertTrue(self.mgr.create_db_table())
+        self.mgr.sqladdrow = 'INSERT INTO image_lib VALUES(?, ?)'
+        self.mgr.build_image_db()
 
 
 if __name__ == '__main__':
