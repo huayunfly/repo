@@ -38,11 +38,19 @@ class WordsMgrTestCase(unittest.TestCase):
             print row
 
     def test_create_image_db(self):
+        """Test create image database by reading the image files"""
         self.mgr.sqladdtable = 'CREATE TABLE image_lib (word text, image blob)'
         self.assertTrue(self.mgr.create_db_table())
         self.mgr.sqladdrow = 'INSERT INTO image_lib VALUES(?, ?)'
         self.mgr.build_image_db()
 
+        params = (u'star',)
+        query = 'SELECT * FROM image_lib WHERE word=?'
+        for row in self.mgr.query_db(query, params):
+            print row
+            f = open('./' + str(row[0]) + '.png', 'wb')
+            f.write(row[1])
+            f.close()
 
 if __name__ == '__main__':
     unittest.main()

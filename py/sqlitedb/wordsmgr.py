@@ -4,6 +4,7 @@ from xml.dom.minidom import parse
 
 __author__ = 'yun_hua'
 
+
 class WordsMgr(object):
     """Manage images with words relationship in database,
        including create, read, update, delete.
