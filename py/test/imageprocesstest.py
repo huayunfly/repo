@@ -1,11 +1,20 @@
 import unittest
+import os
 from image.imageprocessing import ImageProcessor
 
 
-class MyTestCase(unittest.TestCase):
+class ImageResizeTestCase(unittest.TestCase):
+    src = './~testsrc'
+    dest = './~testdest'
+    fmt = '.png'
+
     def setUp(self):
+        if not os.path.isdir(ImageResizeTestCase.src):
+            os.mkdir(ImageResizeTestCase.src)
         self._processor = ImageProcessor()
-        self._processor.init_with_path('./testsrc', './testdest', '.png', (200, 100))
+        self._processor.init_with_path(ImageResizeTestCase.src,
+                                       ImageResizeTestCase.dest,
+                                       ImageResizeTestCase.fmt, (200, 100))
 
     def test_resize(self):
         self._processor.size = (161, 100)
