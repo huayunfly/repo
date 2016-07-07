@@ -131,7 +131,7 @@ class WordsMgr(object):
         c.execute(self.sqladdrow, param)
         self._conn.commit()
 
-    def rowparams_word(self):
+    def word_row_params(self):
         """Build word database row params from xml in the fixed scheme"""
         elements = self._dom.documentElement.getElementsByTagName("item")
         params = []
@@ -146,8 +146,8 @@ class WordsMgr(object):
             params.append(attrs)
         return params
 
-    def build_image_db(self):
-        """Build image database"""
+    def image_row_params(self):
+        """Generator for the image database row parameters"""
         elements = self._dom.documentElement.getElementsByTagName("item")
         for element in elements:
             attr = (element.getAttribute('word'),)
@@ -155,8 +155,7 @@ class WordsMgr(object):
             f = open(path, 'rb')
             try:
                 b = buffer(f.read())
-                param = (element.getAttribute('word'), b)
-                self.insert_db_row(param)
+                yield (element.getAttribute('word'), b)
             finally:
                 f.close()
 

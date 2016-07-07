@@ -3,11 +3,16 @@ __author__ = 'yun_hua'
 
 import unittest
 import sqlite3
+import os
 from sqlitedb.wordsmgr import WordsMgr
 
 
 class WordsMgrTestCase(unittest.TestCase):
+    tempdir = './~temp'
+
     def setUp(self):
+        if not os.path.isdir(WordsMgrTestCase.tempdir):
+            os.mkdir(WordsMgrTestCase.tempdir)
         self.mgr = WordsMgr()
         self.mgr.init_with_path(':memory:', '../res/words.xml', '../res/images/')
         try:
@@ -28,7 +33,7 @@ class WordsMgrTestCase(unittest.TestCase):
         self.assertTrue(self.mgr.create_db_table())
 
         self.mgr.sqladdrow = 'INSERT INTO english_lib VALUES (?, ?, ?, ?, ?, ?)'
-        self.mgr.insert_db_rows(self.mgr.rowparams_word())
+        self.mgr.insert_db_rows(self.mgr.word_row_params())
         # queryError = """SELECT * FROM english_lib WHERE symbolsss=?"""
         params = (u"star",)
         # self.assertRaises(sqlite3.OperationalError, self.mgr.query_db(queryError, params))
@@ -42,13 +47,14 @@ class WordsMgrTestCase(unittest.TestCase):
         self.mgr.sqladdtable = 'CREATE TABLE image_lib (word text, image blob)'
         self.assertTrue(self.mgr.create_db_table())
         self.mgr.sqladdrow = 'INSERT INTO image_lib VALUES(?, ?)'
-        self.mgr.build_image_db()
+        for param in self.mgr.image_row_params():
+            self.mgr.insert_db_row(param)
 
         params = (u'star',)
         query = 'SELECT * FROM image_lib WHERE word=?'
         for row in self.mgr.query_db(query, params):
             print row
-            f = open('./' + str(row[0]) + '.png', 'wb')
+            f = open(os.path.join(WordsMgrTestCase.tempdir, str(row[0]) + '.png'), 'wb')
             f.write(row[1])
             f.close()
 
