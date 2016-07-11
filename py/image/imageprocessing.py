@@ -51,8 +51,12 @@ class ImageProcessor(object):
                 if not name.endswith(self._format):
                     continue
                 image = Image.open(os.path.join(dirpath, name))
-                ratio = (image.size[0] / self._size[0]) / (image.size[1] / self._size[1])
+                ratio = (image.size[0] / image.size[1]) / (self._size[0] / self._size[1])
                 if ratio > 1.0:
+                    # source image's width/height ratio is larger than the destination's.
+                    # ---------------       ---------
+                    # |   source    |       |   dest |
+                    # |_____________|       |________|
                     x0 = int(image.size[0] * (1 - 1 / ratio) / 2)
                     y0 = 0
                     x1 = int(x0 + image.size[0] * (1 / ratio))
@@ -62,9 +66,9 @@ class ImageProcessor(object):
                     scaled.save(os.path.join(self._dest, name))
                 else:
                     x0 = 0
-                    y0 = int(image.size[1] * (1 - 1 / ratio) / 2)
+                    y0 = int(image.size[1] * (1 - ratio) / 2)
                     x1 = image.size[0]
-                    y1 = int(y0 + image.size[1] * (1 / ratio))
+                    y1 = int(y0 + image.size[1] * ratio)
                     cropped = image.crop((x0, y0, x1, y1))
                     scaled = cropped.resize(self._size)
                     scaled.save(os.path.join(self._dest, name))
