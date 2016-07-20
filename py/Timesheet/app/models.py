@@ -1,0 +1,50 @@
+"""
+Definition of models.
+"""
+
+from django.db import models
+from django.contrib.auth.models import User
+
+# Create your models here.
+
+
+class Person(models.Model):
+    """User scheme, extended from django User
+    Default User includes username, password, email, first_name, last_name
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    privilege = models.IntegerField()
+    employee_id = models.IntegerField()
+    dept_id = models.IntegerField()
+
+
+class ProjectGrp(models.Model):
+    summary = models.CharField(max_length=254)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, name='owner')
+
+
+class Project(models.Model):
+    grp_id = models.ForeignKey(ProjectGrp, on_delete=models.CASCADE)
+    summary = models.CharField(max_length=254)
+    isreserved = models.BooleanField()
+    isassociated = models.BooleanField()
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, name='pm')
+    doclink = models.CharField(max_length=516)
+
+
+class TaskTime(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, name='employee')
+    t_percentage = models.FloatField()
+    t_hours = models.FloatField()
+    workday = models.DateField()
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+
+class Department(models.Model):
+    dept_id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=120)
+    summary = models.CharField(max_length=254)
+
+
+
+
