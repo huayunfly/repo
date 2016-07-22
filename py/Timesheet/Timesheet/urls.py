@@ -18,7 +18,8 @@ urlpatterns = [
     # Examples:
     url(r'^$', app.views.home, name='home'),
     url(r'^contact$', app.views.contact, name='contact'),
-    url(r'^about', app.views.about, name='about'),
+    url(r'^about$', app.views.about, name='about'),
+    url(r'^timeline$', app.views.timeline, name='timeline'),
 
     # Here's what django.contrib.auth.views.login does:
     # If called via GET, it displays a login form that POSTs to the same URL. More on this in a bit.
