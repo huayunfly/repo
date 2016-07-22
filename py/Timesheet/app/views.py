@@ -44,3 +44,17 @@ def about(request):
             'year':datetime.now().year,
         }
     )
+
+
+def timeline(request):
+    """Renders the timeline page."""
+    assert isinstance(request, HttpRequest)
+    return render(
+        request,
+        'app/timeline.html',
+        {
+            'title': 'About',
+            'message': 'Your timeline page',
+            'year': datetime.now().year,
+        }
+    )
