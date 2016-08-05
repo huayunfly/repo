@@ -30,6 +30,16 @@ class ProjectGrp(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE, name='owner')
 
 
+class ProjectType(models.Model):
+    typename = models.CharField(max_length=50, primary_key=True)
+    summary = models.CharField(max_length=254)
+
+
+class NoWorkingDay(models.Model):
+    date = models.DateField(primary_key=True)
+    summary = models.CharField(max_length=254)
+
+
 class Project(models.Model):
     project_id = models.CharField(max_length=120, primary_key=True)
     summary = models.CharField(max_length=254)
@@ -38,6 +48,7 @@ class Project(models.Model):
     doclink = models.CharField(max_length=516)
     person = models.ForeignKey(Person, on_delete=models.CASCADE, name='pm')
     projectgrp = models.ForeignKey(ProjectGrp, on_delete=models.CASCADE, null=True)
+    projecttype = models.ForeignKey(ProjectType, on_delete=models.CASCADE, default='FA')
 
 
 class TaskTime(models.Model):

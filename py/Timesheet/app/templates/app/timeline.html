@@ -19,24 +19,14 @@
       </tr>
    </thead>
    <tbody>
+        {% for task in tasks %}
       <tr>
-         <td>Tanmay</td>
-         <td>Bangalore</td>
-         <td>560001</td>
-          <td>FA</td>
+         <td>{{ task.workday }}</td>
+         <td>{{ task.project.project_id }}</td>
+         <td>{{ task.t_percentage }}</td>
+          <td>{{ task.project.projecttype.typename }}</td>
       </tr>
-      <tr>
-         <td>Sachin</td>
-         <td>Mumbai</td>
-         <td>400003</td>
-          <td>FA</td>
-      </tr>
-      <tr>
-         <td>Uma</td>
-         <td>Pune</td>
-         <td>411027</td>
-          <td>FA</td>
-      </tr>
+      {% endfor %}
    </tbody>
 </table>
 </div>
