@@ -1,7 +1,7 @@
 """
 Definition of views.
 """
-
+import calendar
 from django.shortcuts import render
 from django.http import HttpRequest
 from django.template import RequestContext
@@ -49,9 +49,10 @@ def about(request):
     )
 
 
-def timeline(request, date):
+def timeline(request, year, month):
     """Renders the timeline page."""
     assert isinstance(request, HttpRequest)
+    numberday = calendar.monthrange(int(year), int(month))[1]
     return render(
         request,
         'app/timeline.html',
@@ -59,6 +60,8 @@ def timeline(request, date):
             'title': 'About',
             'message': 'Your timeline page',
             'year': datetime.now().year,
-            'tasks': TaskTime.objects.filter(employee__user__username=request.user.username),
+            'tasks': TaskTime.objects.filter(employee__user__username=request.user.username,
+                                             workday__gte=datetime(int(year), int(month), 1),
+                                             workday__lte=datetime(int(year), int(month), numberday)),
         }
     )
