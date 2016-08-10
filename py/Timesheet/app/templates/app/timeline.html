@@ -22,9 +22,26 @@
         {% for task in tasks %}
       <tr>
          <td>{{ task.workday }}</td>
-         <td>{{ task.project.project_id }}</td>
-         <td>{{ task.t_percentage }}</td>
-          <td>{{ task.project.projecttype.typename }}</td>
+         <td>
+             <select class="form-control" id="projectSelect"
+                     value={{ task.project.project_id }}>
+                 {% for project in projects %}
+                     {% if task.project.project_id == project.project_id %}
+                        <option selected>{{ project.project_id }}</option>
+                     {% else %}
+                         <option>{{ project.project_id }}</option>
+                     {% endif %}
+                 {% endfor %}
+            </select>
+         </td>
+         <td>
+              <input class="form-control" id="percentageInput" type="text"
+                     value={{ task.t_percentage }}>
+         </td>
+          <td>
+              <input class="form-control" id="typeBox" type="text"
+                     value={{ task.project.projecttype.typename }} readonly>
+          </td>
       </tr>
       {% endfor %}
    </tbody>

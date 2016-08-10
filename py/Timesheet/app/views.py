@@ -63,5 +63,6 @@ def timeline(request, year, month):
             'tasks': TaskTime.objects.filter(employee__user__username=request.user.username,
                                              workday__gte=datetime(int(year), int(month), 1),
                                              workday__lte=datetime(int(year), int(month), numberday)),
+            'projects': Project.objects.all(),
         }
     )
