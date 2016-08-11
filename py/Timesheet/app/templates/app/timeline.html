@@ -21,10 +21,13 @@
    <tbody>
         {% for task in tasks %}
       <tr>
-         <td>{{ task.workday }}</td>
          <td>
-             <select class="form-control" id="projectSelect"
-                     value={{ task.project.project_id }}>
+             {{ task.workday }}
+             <input class="form-control" id="dayInput" type="text"
+                     value={{ task.workday }}>
+         </td>
+         <td>
+             <select class="form-control" id="projectSelect">
                  {% for project in projects %}
                      {% if task.project.project_id == project.project_id %}
                         <option selected>{{ project.project_id }}</option>

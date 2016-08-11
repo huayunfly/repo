@@ -10,6 +10,7 @@ from app.models import TaskTime
 from app.models import Project
 from app.models import Person
 
+
 def home(request):
     """Renders the home page."""
     assert isinstance(request, HttpRequest)
@@ -21,6 +22,7 @@ def home(request):
             'year': datetime.now().year,
         }
     )
+
 
 def contact(request):
     """Renders the contact page."""
@@ -34,6 +36,7 @@ def contact(request):
             'year': datetime.now().year,
         }
     )
+
 
 def about(request):
     """Renders the about page."""
@@ -49,10 +52,18 @@ def about(request):
     )
 
 
-def timeline(request, year, month):
+def timeline(request, year, month, week=0):
     """Renders the timeline page."""
     assert isinstance(request, HttpRequest)
-    numberday = calendar.monthrange(int(year), int(month))[1]
+    weeks = calendar.monthcalendar(int(year), int(month))
+    weeknumber = int(week)
+    if 0 == weeknumber or weeknumber > len(weeks):
+        weeknumber = -1
+    else:
+        weeknumber -= 1
+    monday = datetime(int(year), int(month), weeks[weeknumber][0])
+    sunday = datetime(int(year), int(month), weeks[weeknumber][-1])
+
     return render(
         request,
         'app/timeline.html',
@@ -61,8 +72,8 @@ def timeline(request, year, month):
             'message': 'Your timeline page',
             'year': datetime.now().year,
             'tasks': TaskTime.objects.filter(employee__user__username=request.user.username,
-                                             workday__gte=datetime(int(year), int(month), 1),
-                                             workday__lte=datetime(int(year), int(month), numberday)),
+                                             workday__gte=monday,
+                                             workday__lte=sunday),
             'projects': Project.objects.all(),
         }
     )
