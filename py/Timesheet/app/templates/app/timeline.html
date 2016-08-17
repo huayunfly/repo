@@ -22,9 +22,15 @@
         {% for task in tasks %}
       <tr>
          <td>
-             {{ task.workday }}
-             <input class="form-control" id="dayInput" type="text"
-                     value={{ task.workday }}>
+             <select class="form-control" id="daySelect">
+                 {% for day in weekdays %}
+                     {% if day.date == task.workday %}
+                        <option selected>{{ day | date:"D, M j" }}</option>
+                     {% else %}
+                         <option>{{ day | date:"D, M j" }}</option>
+                     {% endif %}
+                 {% endfor %}
+            </select>
          </td>
          <td>
              <select class="form-control" id="projectSelect">
