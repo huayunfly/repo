@@ -64,18 +64,13 @@ def timeline(request, year, month, week=0):
         weeknumber = -1
     else:
         weeknumber -= 1
-    first = 0
-    # end = 0
+
     # Find the first day in one week of this month like [0, 0, 0, 0, 1, 2, 3]
+    first = 0
     for day in range(0, WEEK_DAYS_NUM, 1):
         if 0 != weeks[weeknumber][day]:
             first = day
             break
-    # Find the last day in one week of this month like [26, 27, 28, 29, 30, 31, 0]
-    #for day in range(6, -1, -1):
-    #    if 0 != weeks[weeknumber][day]:
-    #        end = day
-    #        break
 
     # Make a valid week range which may cover the last month or the next month.
     monday = datetime(int(year), int(month), weeks[weeknumber][first]) - timedelta(days=first)
