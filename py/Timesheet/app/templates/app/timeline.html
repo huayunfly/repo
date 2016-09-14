@@ -7,97 +7,63 @@
 
     <div id="build">
         <form id=target action="." method="post" class="form-horizontal">
-            <div id="legend" class="component" rel="popover" title="Form Title" trigger="manual"
-                 data-content="
-                    <form class='form'>
-                      <div class='controls'>
-                        <label class='control-label'>Title</label> <input class='input-large' type='text' name='title' id='text'>
-                        <hr/>
-                        <button class='btn btn-info'>Save</button><button class='btn btn-danger'>Cancel</button>
-                      </div>
-                    </form>"
-            >
-                <legend class="valtype" data-valtype="text">在本区域填写工时（%计）</legend>
-                <div class="jumbotron">
-                    <table class="table table-hover">
-                        <caption>项目工时</caption>
-                        <thead>
+            <legend class="valtype" data-valtype="text">在本区域填写工时（%计）</legend>
+            <div class="jumbotron">
+                <table class="table table-hover">
+                    <caption>项目工时</caption>
+                    <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>项目号</th>
+                        <th>时间（%）</th>
+                        <th>项目类型</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for task in tasks %}
                         <tr>
-                            <th>日期</th>
-                            <th>项目号</th>
-                            <th>时间（%）</th>
-                            <th>项目类型</th>
+                            <td>
+                                <select class="form-control" id="daySelect">
+                                    {% for day in weekdays %}
+                                        {% if day.date == task.workday %}
+                                            <option selected>{{ day | date:"D, M j" }}</option>
+                                        {% else %}
+                                            <option>{{ day | date:"D, M j" }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" id="projectSelect">
+                                    {% for project in projects %}
+                                        {% if task.project.project_id == project.project_id %}
+                                            <option selected>{{ project.project_id }}</option>
+                                        {% else %}
+                                            <option>{{ project.project_id }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input class="form-control" id="percentageInput" type="text"
+                                       value={{ task.t_percentage }}>
+                            </td>
+                            <td>
+                                <input class="form-control" id="typeBox" type="text"
+                                       value={{ task.project.projecttype.typename }} readonly>
+                            </td>
                         </tr>
-                        </thead>
-                        <tbody>
-                        {% for task in tasks %}
-                            <tr>
-                                <td>
-                                    <select class="form-control" id="daySelect">
-                                        {% for day in weekdays %}
-                                            {% if day.date == task.workday %}
-                                                <option selected>{{ day | date:"D, M j" }}</option>
-                                            {% else %}
-                                                <option>{{ day | date:"D, M j" }}</option>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </select>
-                                </td>
-                                <td>
-                                    <select class="form-control" id="projectSelect">
-                                        {% for project in projects %}
-                                            {% if task.project.project_id == project.project_id %}
-                                                <option selected>{{ project.project_id }}</option>
-                                            {% else %}
-                                                <option>{{ project.project_id }}</option>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </select>
-                                </td>
-                                <td>
-                                    <input class="form-control" id="percentageInput" type="text"
-                                           value={{ task.t_percentage }}>
-                                </td>
-                                <td>
-                                    <input class="form-control" id="typeBox" type="text"
-                                           value={{ task.project.projecttype.typename }} readonly>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-0 col-md-1">
+                    <input type="submit" value="保存" class="btn btn-default"/>
                 </div>
-
             </div>
         </form>
     </div>
-    <form class="form-horizontal" id="components">
-        <div class="control-group component" rel="popover" title="Search Input" trigger="manual"
-             data-content="
-                      <form class='form'>
-                        <div class='controls'>
-                          <label class='control-label'>Label Text</label> <input class='input-large' type='text' name='label' id='label'>
-                          <label class='control-label'>Options: </label>
-                          <textarea style='min-height: 200px' id='option'> </textarea>
-                          <hr/>
-                          <button class='btn btn-info'>Save</button><button class='btn btn-danger'>Cancel</button>
-                        </div>
-                      </form>"
-        >
-
-            <!-- Select Basic -->
-            <label class="control-label valtype" data-valtype="label">Select - Basic</label>
-            <div class="controls">
-                <select class="input-xlarge valtype" data-valtype="option">
-                    <option>Enter</option>
-                    <option>Your</option>
-                    <option>Options</option>
-                    <option>Here!</option>
-                </select>
-            </div>
-        </div>
-    </form>
-
 {% endblock %}
 
 {% block scripts %}
