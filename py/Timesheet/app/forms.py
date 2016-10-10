@@ -22,7 +22,7 @@ class BootstrapAuthenticationForm(AuthenticationForm):
 class TimelineForm(forms.Form):
     day = forms.ChoiceField(label='daySelect')
     project = forms.ChoiceField(label='projectSelect')
-    percentage = forms.DecimalField(lable='percentageInput')
+    percentage = forms.DecimalField(label='percentageInput')
     # using disabled attribute is not safe unless you believe your user.
     # Instead:
     # <div>
