@@ -7,6 +7,7 @@
 
     <div id="build">
         <form id=target action="." method="post" class="form-horizontal">
+        {% csrf_token %}
             <legend class="valtype" data-valtype="text">在本区域填写工时（%计）</legend>
             <div class="jumbotron">
                 <table class="table table-hover">
@@ -23,7 +24,7 @@
                     {% for task in tasks %}
                         <tr>
                             <td>
-                                <select class="form-control" id="daySelect">
+                                <select class="form-control" id="daySelect" name={{ forloop.counter0 | stringformat:"s" | add:".daySelect"}}>
                                     {% for day in weekdays %}
                                         {% if day.date == task.workday %}
                                             <option selected>{{ day | date:"D, M j" }}</option>
@@ -34,7 +35,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="form-control" id="projectSelect">
+                                <select class="form-control" id="projectSelect" name={{ forloop.counter0 | stringformat:"s" | add:".projectSelect"}}>
                                     {% for project in projects %}
                                         {% if task.project.project_id == project.project_id %}
                                             <option selected>{{ project.project_id }}</option>
@@ -45,11 +46,11 @@
                                 </select>
                             </td>
                             <td>
-                                <input class="form-control" id="percentageInput" type="text"
+                                <input class="form-control" id="percentageInput" type="text" name={{ forloop.counter0 | stringformat:"s" | add:".percentageInput"}}
                                        value={{ task.t_percentage }}>
                             </td>
                             <td>
-                                <input class="form-control" id="typeBox" type="text"
+                                <input class="form-control" id="typeBox" type="text" name="typeBox"
                                        value={{ task.project.projecttype.typename }} readonly>
                             </td>
                         </tr>
