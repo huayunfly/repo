@@ -24,7 +24,7 @@
                     {% for task in tasks %}
                         <tr>
                             <td>
-                                <select class="form-control" id="daySelect" name={{ forloop.counter0 | stringformat:"s" | add:".daySelect"}}>
+                                <select class="form-control" id={{ dayID }} name={{ forloop.counter0 | stringformat:"s" | add:dayID}}>
                                     {% for day in weekdays %}
                                         {% if day.date == task.workday %}
                                             <option selected>{{ day | date:"D, M j" }}</option>
@@ -35,7 +35,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="form-control" id="projectSelect" name={{ forloop.counter0 | stringformat:"s" | add:".projectSelect"}}>
+                                <select class="form-control" id={{ projectID }} name={{ forloop.counter0 | stringformat:"s" | add:projectID}}>
                                     {% for project in projects %}
                                         {% if task.project.project_id == project.project_id %}
                                             <option selected>{{ project.project_id }}</option>
@@ -46,7 +46,7 @@
                                 </select>
                             </td>
                             <td>
-                                <input class="form-control" id="percentageInput" type="text" name={{ forloop.counter0 | stringformat:"s" | add:".percentageInput"}}
+                                <input class="form-control" id={{ timeID }} type="text" name={{ forloop.counter0 | stringformat:"s" | add:timeID}}
                                        value={{ task.t_percentage }}>
                             </td>
                             <td>

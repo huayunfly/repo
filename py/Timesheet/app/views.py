@@ -14,6 +14,11 @@ from app.models import Person
 from .forms import TimelineForm
 
 WEEK_DAYS_NUM = 7
+# constants for creating unique name and id for the html-table cell. e.g. 0.projectSel, 1.daySel
+PROJECT_CELL_ID = '.projectSel'
+DAY_CELL_ID = '.daySel'
+TASKTIME_CELL_ID = '.percentageInput'
+DELIMITER = '_'
 
 
 def home(request):
@@ -60,8 +65,50 @@ def about(request):
 def timeline(request, year, month, week=0):
     """Renders the timeline page."""
     assert isinstance(request, HttpRequest)
+    has_error = False
     if request.method == 'POST':
-        return HttpResponseRedirect('/thanks/')
+        i = 0
+        tasks = {}
+        while i >= 0:
+            workday = request.POST.get(str(i) + DAY_CELL_ID)
+            if workday is None:
+                # POST iteration complete
+                break
+            else:
+                proj = request.POST.get(str(i) + PROJECT_CELL_ID)
+                hours = request.POST.get(str(i) + TASKTIME_CELL_ID)
+                if (proj is None) or (hours is None):
+                    # validation failed
+                    has_error = True
+                    break
+                try:
+                    hours = float(hours)
+                except ValueError:
+                    # validation failed
+                    has_error = True
+                    break
+                if hours < 0.0:
+                    # validation failed
+                    has_error = True
+                    break
+                # create a key
+                taskkey = workday + DELIMITER + proj
+                if taskkey in tasks:
+                    if tasks[taskkey] + hours > 1.0:
+                        # validation failed
+                        has_error = True
+                        break
+                    else:
+                        # merge the task hours under the same day and project
+                        tasks[taskkey] += hours
+                else:
+                    tasks[taskkey] = hours
+                i += 1
+
+        if has_error:
+            return HttpResponseRedirect('/error/')
+        else:
+            return HttpResponseRedirect('/thanks/')
     else:
         weeks = calendar.monthcalendar(int(year), int(month))
         weeknumber = int(week)
@@ -98,5 +145,8 @@ def timeline(request, year, month, week=0):
                 'projects': Project.objects.all(),
                 'weekdays': weekdays,
                 'form': form,
+                'projectID': PROJECT_CELL_ID,
+                'dayID': DAY_CELL_ID,
+                'timeID': TASKTIME_CELL_ID,
             }
         )
