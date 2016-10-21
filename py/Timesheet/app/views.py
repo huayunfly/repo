@@ -129,9 +129,15 @@ def timeline(request, year, month, week=0):
                 project = Project.objects.get(project_id=day_project[1])
                 percentage = item[1]
                 user = Person.objects.get(user=request.user)
-                t1 = TaskTime(employee=user, t_hours=percentage * DAY_WORKING_HOURS,
-                              t_percentage=percentage, workday=day, project=project)
-                t1.save()
+                # insert or update a database row
+                tm = TaskTime.objects.get(workday=day, project=project)
+                if tm is not None:
+                    tm.t_hours = percentage * DAY_WORKING_HOURS
+                    tm.t_percentage = percentage
+                else:
+                    tm = TaskTime(employee=user, t_hours=percentage * DAY_WORKING_HOURS,
+                                  t_percentage=percentage, workday=day, project=project)
+                tm.save()
 
             return HttpResponseRedirect('/thanks/')
     else:
