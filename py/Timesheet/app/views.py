@@ -2,6 +2,7 @@
 Definition of views.
 """
 import calendar
+import time
 from django.shortcuts import render
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
@@ -14,10 +15,11 @@ from app.models import Person
 from .forms import TimelineForm
 
 WEEK_DAYS_NUM = 7
+DAY_WORKING_HOURS = 8.0
 # constants for creating unique name and id for the html-table cell. e.g. 0.projectSel, 1.daySel
-PROJECT_CELL_ID = '.projectSel'
-DAY_CELL_ID = '.daySel'
-TASKTIME_CELL_ID = '.percentageInput'
+PROJECT_CELL_ID = '-projectSel'
+DAY_CELL_ID = '-daySel'
+TASKTIME_CELL_ID = '-percentageInput'
 DELIMITER = '_'
 
 
@@ -62,52 +64,75 @@ def about(request):
     )
 
 
+def validate_task(request):
+    """Validate the timeline form data
+        for example: pub_date html input field, name=form-1-pub_date, id=id_form-1-pub_date
+        @param request: HttpRequest object
+        @return (has_error<BOOL>, data<dict>): tuple including validate result and table data mappings.
+    """
+    has_error = False
+    i = 0
+    mappings = {}
+    while i >= 0:
+        workday = request.POST.get(str(i) + DAY_CELL_ID)
+        if workday is None:
+            # POST iteration complete
+            break
+        else:
+            proj = request.POST.get(str(i) + PROJECT_CELL_ID)
+            hours = request.POST.get(str(i) + TASKTIME_CELL_ID)
+            if (proj is None) or (hours is None):
+                # validation failed
+                has_error = True
+                break
+            try:
+                hours = float(hours)
+            except ValueError:
+                # validation failed
+                has_error = True
+                break
+            if hours < 0.0:
+                # validation failed
+                has_error = True
+                break
+            # create a key
+            taskkey = workday + DELIMITER + proj
+            if taskkey in mappings:
+                if mappings[taskkey] + hours > 1.0:
+                    # validation failed
+                    has_error = True
+                    break
+                else:
+                    # merge the task hours under the same day and project
+                    mappings[taskkey] += hours
+            else:
+                mappings[taskkey] = hours
+            i += 1
+    return [has_error, mappings]
+
+
 def timeline(request, year, month, week=0):
     """Renders the timeline page."""
     assert isinstance(request, HttpRequest)
-    has_error = False
-    if request.method == 'POST':
-        i = 0
-        tasks = {}
-        while i >= 0:
-            workday = request.POST.get(str(i) + DAY_CELL_ID)
-            if workday is None:
-                # POST iteration complete
-                break
-            else:
-                proj = request.POST.get(str(i) + PROJECT_CELL_ID)
-                hours = request.POST.get(str(i) + TASKTIME_CELL_ID)
-                if (proj is None) or (hours is None):
-                    # validation failed
-                    has_error = True
-                    break
-                try:
-                    hours = float(hours)
-                except ValueError:
-                    # validation failed
-                    has_error = True
-                    break
-                if hours < 0.0:
-                    # validation failed
-                    has_error = True
-                    break
-                # create a key
-                taskkey = workday + DELIMITER + proj
-                if taskkey in tasks:
-                    if tasks[taskkey] + hours > 1.0:
-                        # validation failed
-                        has_error = True
-                        break
-                    else:
-                        # merge the task hours under the same day and project
-                        tasks[taskkey] += hours
-                else:
-                    tasks[taskkey] = hours
-                i += 1
 
-        if has_error:
+    if request.method == 'POST':
+        result = validate_task(request)
+        if result[0]:
             return HttpResponseRedirect('/error/')
         else:
+            # update the database
+            for item in result[1].iteritems():
+                day_project = item[0].split(DELIMITER)
+                # day string format: 2016 Fri, Oct 21
+                daystring = datetime.strptime('%s %s' % (year, day_project[0]), '%Y %a, %b %d')
+                day = datetime(daystring.year, daystring.month, daystring.day)
+                project = Project.objects.get(project_id=day_project[1])
+                percentage = item[1]
+                user = Person.objects.get(user=request.user)
+                t1 = TaskTime(employee=user, t_hours=percentage * DAY_WORKING_HOURS,
+                              t_percentage=percentage, workday=day, project=project)
+                t1.save()
+
             return HttpResponseRedirect('/thanks/')
     else:
         weeks = calendar.monthcalendar(int(year), int(month))
