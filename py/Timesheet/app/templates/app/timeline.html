@@ -1,4 +1,5 @@
 {% extends "app/layout.html" %}
+{% load lookup %}
 
 {% block content %}
 
@@ -24,7 +25,7 @@
                     {% for task in tasks %}
                         <tr>
                             <td>
-                                <select class="form-control" id={{ dayID }} name={{ forloop.counter0 | stringformat:"s" | add:dayID}}>
+                                <select class="form-control" id="{{ dayID | lookup:forloop.counter0 }}" name={{ dayID | lookup:forloop.counter0 }}>
                                     {% for day in weekdays %}
                                         {% if day.date == task.workday %}
                                             <option selected>{{ day | date:"D, M j" }}</option>
@@ -35,7 +36,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="form-control" id={{ projectID }} name={{ forloop.counter0 | stringformat:"s" | add:projectID}}>
+                                <select class="form-control" id={{ projectID | lookup:forloop.counter0}} name={{ projectID | lookup:forloop.counter0}}>
                                     {% for project in projects %}
                                         {% if task.project.project_id == project.project_id %}
                                             <option selected>{{ project.project_id }}</option>
@@ -46,7 +47,7 @@
                                 </select>
                             </td>
                             <td>
-                                <input class="form-control" id={{ timeID }} type="text" name={{ forloop.counter0 | stringformat:"s" | add:timeID}}
+                                <input class="form-control" id={{ timeID | lookup:forloop.counter0}} type="text" name={{ timeID | lookup:forloop.counter0}}
                                        value={{ task.t_percentage }}>
                             </td>
                             <td>
@@ -54,6 +55,8 @@
                                        value={{ task.project.projecttype.typename }} readonly>
                             </td>
                         </tr>
+                    {% empty %}
+                        <li>Sorry, no athletes in this list.</li>
                     {% endfor %}
                     </tbody>
                 </table>

@@ -2,11 +2,9 @@
 Definition of views.
 """
 import calendar
-import time
 from django.shortcuts import render
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
-from django.template import RequestContext
 from datetime import datetime
 from datetime import timedelta
 from app.models import TaskTime
@@ -16,10 +14,13 @@ from .forms import TimelineForm
 
 WEEK_DAYS_NUM = 7
 DAY_WORKING_HOURS = 8.0
-# constants for creating unique name and id for the html-table cell. e.g. 0.projectSel, 1.daySel
-PROJECT_CELL_ID = '-projectSel'
-DAY_CELL_ID = '-daySel'
-TASKTIME_CELL_ID = '-percentageInput'
+
+# Basename for creating unique name and id for the html-table cell.
+PROJECT_CELL_ID = 'projectSel'
+DAY_CELL_ID = 'daySel'
+TASKTIME_CELL_ID = 'percentageInput'
+
+FORM_DATE_FORMAT = '%Y %a, %b %d'
 DELIMITER = '_'
 
 
@@ -111,6 +112,16 @@ def validate_task(request):
     return [has_error, mappings]
 
 
+def create_names(number, basename):
+    """Create unique name for the form fields
+     for example: pub_date html input field, name=form-1-pub_date, id=id_form-1-pub_date
+    @param number: the total number of fields
+    @param basename: the fixed string
+    @return the name list
+    """
+    return ['form-%d-%s' % (n, basename) for n in range(number)]
+
+
 def timeline(request, year, month, week=0):
     """Renders the timeline page."""
     assert isinstance(request, HttpRequest)
@@ -121,24 +132,27 @@ def timeline(request, year, month, week=0):
             return HttpResponseRedirect('/error/')
         else:
             # update the database
-            for item in result[1].iteritems():
-                day_project = item[0].split(DELIMITER)
+            for key, value in result[1].iteritems():
+                day_project = key.split(DELIMITER)
                 # day string format: 2016 Fri, Oct 21
-                daystring = datetime.strptime('%s %s' % (year, day_project[0]), '%Y %a, %b %d')
-                day = datetime(daystring.year, daystring.month, daystring.day)
+                # retrieve year from 'year' parameter
+                datetime0 = datetime.strptime('%s %s' % (year, day_project[0]), FORM_DATE_FORMAT)
+                day = datetime(datetime0.year, datetime0.month, datetime0.day)
                 project = Project.objects.get(project_id=day_project[1])
-                percentage = item[1]
+                percentage = value
+                # Retrieving a single object with get()
                 user = Person.objects.get(user=request.user)
-                # insert or update a database row
-                tm = TaskTime.objects.get(workday=day, project=project)
-                if tm is not None:
+                # INSERT or UPDATE a database row
+                try:
+                    tm = TaskTime.objects.get(workday=day, project=project)
                     tm.t_hours = percentage * DAY_WORKING_HOURS
                     tm.t_percentage = percentage
-                else:
+                except TaskTime.DoesNotExist:
                     tm = TaskTime(employee=user, t_hours=percentage * DAY_WORKING_HOURS,
                                   t_percentage=percentage, workday=day, project=project)
+                except TaskTime.MultipleObjectsReturned:
+                    return HttpResponseRedirect('/multi-value-error/')
                 tm.save()
-
             return HttpResponseRedirect('/thanks/')
     else:
         weeks = calendar.monthcalendar(int(year), int(month))
@@ -161,8 +175,9 @@ def timeline(request, year, month, week=0):
         for day in range(1, WEEK_DAYS_NUM, 1):
             weekdays.append(monday + timedelta(days=day))
 
-        form = TimelineForm()
-
+        tasks = TaskTime.objects.filter(employee__user__username=request.user.username,
+                                                 workday__gte=weekdays[0],
+                                                 workday__lte=weekdays[-1])
         return render(
             request,
             'app/timeline.html',
@@ -170,14 +185,11 @@ def timeline(request, year, month, week=0):
                 'title': 'About',
                 'message': 'Your timeline page',
                 'year': datetime.now().year,
-                'tasks': TaskTime.objects.filter(employee__user__username=request.user.username,
-                                                 workday__gte=weekdays[0],
-                                                 workday__lte=weekdays[-1]),
+                'tasks': tasks,
                 'projects': Project.objects.all(),
                 'weekdays': weekdays,
-                'form': form,
-                'projectID': PROJECT_CELL_ID,
-                'dayID': DAY_CELL_ID,
-                'timeID': TASKTIME_CELL_ID,
+                'projectID': create_names(len(tasks), PROJECT_CELL_ID),
+                'dayID': create_names(len(tasks), DAY_CELL_ID),
+                'timeID': create_names(len(tasks), TASKTIME_CELL_ID),
             }
         )
