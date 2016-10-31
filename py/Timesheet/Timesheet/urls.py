@@ -17,8 +17,10 @@ import app.views
 urlpatterns = [
     # Examples:
     url(r'^$', app.views.home, name='home'),
-    url(r'^contact$', app.views.contact, name='contact'),
-    url(r'^about$', app.views.about, name='about'),
+    url(r'^contact/$', app.views.contact, name='contact'),
+    url(r'^about/$', app.views.about, name='about'),
+    url(r'^thanks/$', app.views.thanks, name='thanks'),
+    url(r'error/$', app.views.error, name='error'),
     url(r'^timeline/(?P<year>[0-9]{4})/(?P<month>[0-9]{2})/(?P<week>[0-6]{1})/$', app.views.timeline, name='timeline'),
 
     # Here's what django.contrib.auth.views.login does:
