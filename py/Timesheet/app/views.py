@@ -16,9 +16,11 @@ WEEK_DAYS_NUM = 7
 DAY_WORKING_HOURS = 8.0
 
 # Basename for creating unique name and id for the html-table cell.
-PROJECT_CELL_ID = 'projectSel'
-DAY_CELL_ID = 'daySel'
-TASKTIME_CELL_ID = 'percentageInput'
+PROJECT_ELEMENT_NAME = 'projectSel'
+DAY_ELEMENT_NAME = 'daySel'
+TASKTIME_ELEMENT_NAME = 'percentageInput'
+ELEMENT_SURNAME = 'form'
+ELEMENT_ID_SURNAME = 'id_form'
 
 FORM_DATE_FORMAT = '%Y %a, %b %d'
 DELIMITER = '_'
@@ -65,6 +67,34 @@ def about(request):
     )
 
 
+def thanks(request):
+    """Renders the thanks page."""
+    assert isinstance(request, HttpRequest)
+    return render(
+        request,
+        'app/thanks.html',
+        {
+            'title': 'Thanks',
+            'message': 'Operate successfully',
+            'year': datetime.now().year,
+        }
+    )
+
+
+def error(request):
+    """Renders the error page."""
+    assert isinstance(request, HttpRequest)
+    return render(
+        request,
+        'app/error.html',
+        {
+            'title': 'Error',
+            'message': 'Operation failed',
+            'year': datetime.now().year,
+        }
+    )
+
+
 def validate_task(request):
     """Validate the timeline form data
         for example: pub_date html input field, name=form-1-pub_date, id=id_form-1-pub_date
@@ -75,13 +105,13 @@ def validate_task(request):
     i = 0
     mappings = {}
     while i >= 0:
-        workday = request.POST.get(str(i) + DAY_CELL_ID)
+        workday = request.POST.get(str(i) + DAY_ELEMENT_NAME)
         if workday is None:
             # POST iteration complete
             break
         else:
-            proj = request.POST.get(str(i) + PROJECT_CELL_ID)
-            hours = request.POST.get(str(i) + TASKTIME_CELL_ID)
+            proj = request.POST.get(str(i) + PROJECT_ELEMENT_NAME)
+            hours = request.POST.get(str(i) + TASKTIME_ELEMENT_NAME)
             if (proj is None) or (hours is None):
                 # validation failed
                 has_error = True
@@ -112,14 +142,16 @@ def validate_task(request):
     return [has_error, mappings]
 
 
-def create_names(number, basename):
-    """Create unique name for the form fields
-     for example: pub_date html input field, name=form-1-pub_date, id=id_form-1-pub_date
-    @param number: the total number of fields
-    @param basename: the fixed string
+def create_names(number, element_name, surname):
+    """Create unique name for the form elements
+     for example: pub_date html input field, name=pub_date, surname=form,
+     then the format will be form-0-pub_date, form-1-pub_date
+    @param number: the total number of elements, which is used to make name unique
+    @param element_name: the form element base name
+    @param surname: the form element's base name
     @return the name list
     """
-    return ['form-%d-%s' % (n, basename) for n in range(number)]
+    return ['%s-%d-%s' % (surname, n, element_name) for n in range(number)]
 
 
 def timeline(request, year, month, week=0):
@@ -151,7 +183,7 @@ def timeline(request, year, month, week=0):
                     tm = TaskTime(employee=user, t_hours=percentage * DAY_WORKING_HOURS,
                                   t_percentage=percentage, workday=day, project=project)
                 except TaskTime.MultipleObjectsReturned:
-                    return HttpResponseRedirect('/multi-value-error/')
+                    return HttpResponseRedirect('/error/')
                 tm.save()
             return HttpResponseRedirect('/thanks/')
     else:
@@ -188,8 +220,11 @@ def timeline(request, year, month, week=0):
                 'tasks': tasks,
                 'projects': Project.objects.all(),
                 'weekdays': weekdays,
-                'projectID': create_names(len(tasks), PROJECT_CELL_ID),
-                'dayID': create_names(len(tasks), DAY_CELL_ID),
-                'timeID': create_names(len(tasks), TASKTIME_CELL_ID),
+                'projectID': create_names(len(tasks), PROJECT_ELEMENT_NAME, ELEMENT_ID_SURNAME),
+                'dayID': create_names(len(tasks), DAY_ELEMENT_NAME, ELEMENT_ID_SURNAME),
+                'timeID': create_names(len(tasks), TASKTIME_ELEMENT_NAME, ELEMENT_ID_SURNAME),
+                'projectName': create_names(len(tasks), PROJECT_ELEMENT_NAME, ELEMENT_SURNAME),
+                'dayName': create_names(len(tasks), DAY_ELEMENT_NAME, ELEMENT_SURNAME),
+                'timeName': create_names(len(tasks), TASKTIME_ELEMENT_NAME, ELEMENT_SURNAME),
             }
         )

@@ -25,7 +25,7 @@
                     {% for task in tasks %}
                         <tr>
                             <td>
-                                <select class="form-control" id="{{ dayID | lookup:forloop.counter0 }}" name={{ dayID | lookup:forloop.counter0 }}>
+                                <select class="form-control" id="{{ dayID | lookup:forloop.counter0 }}" name={{ dayName | lookup:forloop.counter0 }}>
                                     {% for day in weekdays %}
                                         {% if day.date == task.workday %}
                                             <option selected>{{ day | date:"D, M j" }}</option>
@@ -36,7 +36,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="form-control" id={{ projectID | lookup:forloop.counter0}} name={{ projectID | lookup:forloop.counter0}}>
+                                <select class="form-control" id={{ projectID | lookup:forloop.counter0}} name={{ projectName | lookup:forloop.counter0}}>
                                     {% for project in projects %}
                                         {% if task.project.project_id == project.project_id %}
                                             <option selected>{{ project.project_id }}</option>
@@ -47,7 +47,7 @@
                                 </select>
                             </td>
                             <td>
-                                <input class="form-control" id={{ timeID | lookup:forloop.counter0}} type="text" name={{ timeID | lookup:forloop.counter0}}
+                                <input class="form-control" id={{ timeID | lookup:forloop.counter0}} type="text" name={{ timeName | lookup:forloop.counter0}}
                                        value={{ task.t_percentage }}>
                             </td>
                             <td>
@@ -56,7 +56,7 @@
                             </td>
                         </tr>
                     {% empty %}
-                        <li>Sorry, no athletes in this list.</li>
+                        <li>Sorry, no task in this list.</li>
                     {% endfor %}
                     </tbody>
                 </table>
