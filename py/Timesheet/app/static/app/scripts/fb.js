@@ -1,14 +1,15 @@
 function editrow(event) {
     var $temp;
-    event.preventDefault();
-    // ctrl+c(67), ctrl+c(68), ctrl+v(86), ctrl+x(88)
+    // ctrl+c(67), ctrl+d(68), ctrl+v(86), ctrl+x(88)
     if (event.ctrlKey && 86 == event.which) {
+        event.preventDefault();
         alert($("body #clipboard").clone().html());
         $(this).after($("body #clipboard").clone().html());
         $(this).next().on("keydown", editrow);
         alert($("table tbody tr:last").html());
     }
     else if (event.ctrlKey && 67 == event.which) {
+        event.preventDefault();
         if (0 == $("body #clipboard").length) {
             $temp = $("<form class='form-horizontal span6' id='clipboard'></form>").append($(this).clone());
             $temp.hide();
@@ -21,10 +22,23 @@ function editrow(event) {
         }
     }
     else if (event.ctrlKey && 68 == event.which) {
+        event.preventDefault();
         if ($(this).siblings().length > 0) {
             $(this).remove();
         }
     }
+    $("table tbody tr").each(function (index) {
+        var day = $("td select[name$='daySel']");
+        var project = $("td select[name$='projectSel']");
+        var tasktime = $("td input[name$='percentageInput']");
+        $(this).find(day).attr('name', 'form-' + index + '-daySel');
+        $(this).find(day).attr('id', 'id_form-' + index + '-daySel');
+        $(this).find(project).attr('name', 'form-' + index + '-projectSel');
+        $(this).find(project).attr('id', 'id_form-' + index + '-projectSel');
+        $(this).find(tasktime).attr('name', 'form-' + index + '-percentageInput');
+        $(this).find(tasktime).attr('id', 'id_form-' + index + '-percentageInput');
+    });
+
 }
 
 function dragrow(md) {
