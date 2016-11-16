@@ -7,6 +7,7 @@ function editrow(event) {
         $(this).after($("body #clipboard").clone().html());
         $(this).next().on("keydown", editrow);
         alert($("table tbody tr:last").html());
+        rename();
     }
     else if (event.ctrlKey && 67 == event.which) {
         event.preventDefault();
@@ -26,18 +27,8 @@ function editrow(event) {
         if ($(this).siblings().length > 0) {
             $(this).remove();
         }
+        rename();
     }
-    $("table tbody tr").each(function (index) {
-        var day = $("td select[name$='daySel']");
-        var project = $("td select[name$='projectSel']");
-        var tasktime = $("td input[name$='percentageInput']");
-        $(this).find(day).attr('name', 'form-' + index + '-daySel');
-        $(this).find(day).attr('id', 'id_form-' + index + '-daySel');
-        $(this).find(project).attr('name', 'form-' + index + '-projectSel');
-        $(this).find(project).attr('id', 'id_form-' + index + '-projectSel');
-        $(this).find(tasktime).attr('name', 'form-' + index + '-percentageInput');
-        $(this).find(tasktime).attr('id', 'id_form-' + index + '-percentageInput');
-    });
 
 }
 
@@ -129,11 +120,67 @@ function dragrow(md) {
     });
 }
 
-$(document).ready(function () {
-        $("table tbody tr").on("keydown", editrow);
-        //$("table tbody tr").on("mousedown", dragrow);
+function rename() {
+    $("table tbody tr").each(function (index) {
+        var day = $("td select[name$='daySel']");
+        var project = $("td select[name$='projectSel']");
+        var tasktime = $("td input[name$='percentageInput']");
+        $(this).find(day).attr('name', 'form-' + index + '-daySel');
+        $(this).find(day).attr('id', 'id_form-' + index + '-daySel');
+        $(this).find(project).attr('name', 'form-' + index + '-projectSel');
+        $(this).find(project).attr('id', 'id_form-' + index + '-projectSel');
+        $(this).find(tasktime).attr('name', 'form-' + index + '-percentageInput');
+        $(this).find(tasktime).attr('id', 'id_form-' + index + '-percentageInput');
+    });
+}
+
+function validate() {
+    var mapping = {};
+    var DELIMITER = "_";
+    $("table tbody tr").each(function (index) {
+        var $day = $("td select[name$='daySel']");
+        var $project = $("td select[name$='projectSel']");
+        var $tasktime = $("td input[name$='percentageInput']");
+        var val = $(this).find($tasktime).val();
+        if (!isFloat(val) || parseFloat(val) < 0.0 || parseFloat(val) > 1.0) {
+            $(this).find($tasktime).parent().attr("class", "has-error");
+        }
+        else {
+            $(this).find($tasktime).parent().attr("class", null);
+        }
+    });
+}
+
+function isFloat(str) {
+    if (/^(-?\d+)(\.\d+)?$/.test(str)) {
+        return true;
     }
-);
+    return false;
+}
+
+function isInteger(str) {
+    if (/^-?\d+$/.test(str)) {
+        return true;
+    }
+    return false;
+}
+
+$(document).ready(function () {
+    $("table tbody tr").on("keydown", editrow);
+    $("#targettest").click(function () {
+        validate();
+    });
+
+    $("input[name$='percentageInput']").each(function () {
+        $(this).mask("9?9%");
+        $(this).on("blur", function () {
+            var value = ($(this).val().length == 1) ? $(this).val() + '%' : $(this).val();
+            $(this).val(value);
+        });
+    });
+
+    //$("table tbody tr").on("mousedown", dragrow);
+});
 
 
 /*$(document).ready(function () {
