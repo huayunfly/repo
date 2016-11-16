@@ -7,64 +7,68 @@
     <h3>{{ message }}</h3>
 
     <div id="build">
-        <form id=target action="." method="post" class="form-horizontal">
-        {% csrf_token %}
+        <form role="form" id=target action="." method="post" class="form-horizontal">
+            {% csrf_token %}
             <legend class="valtype" data-valtype="text">在本区域填写工时（%计）</legend>
-            <div class="jumbotron">
-                <table class="table table-hover">
-                    <caption>项目工时</caption>
-                    <thead>
+            <table class="table table-hover">
+                <caption>项目工时</caption>
+                <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>项目号</th>
+                    <th>时间（%）</th>
+                    <th>项目类型</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for task in tasks %}
                     <tr>
-                        <th>日期</th>
-                        <th>项目号</th>
-                        <th>时间（%）</th>
-                        <th>项目类型</th>
+                        <td>
+                            <select class="form-control" id="{{ dayID | lookup:forloop.counter0 }}"
+                                    name={{ dayName | lookup:forloop.counter0 }}>
+                                {% for day in weekdays %}
+                                    {% if day.date == task.workday %}
+                                        <option selected>{{ day | date:"D, M j" }}</option>
+                                    {% else %}
+                                        <option>{{ day | date:"D, M j" }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-control"
+                                    id={{ projectID | lookup:forloop.counter0 }} name={{ projectName | lookup:forloop.counter0 }}>
+                                {% for project in projects %}
+                                    {% if task.project.project_id == project.project_id %}
+                                        <option selected>{{ project.project_id }}</option>
+                                    {% else %}
+                                        <option>{{ project.project_id }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input class="form-control" id={{ timeID | lookup:forloop.counter0 }} type="text"
+                                   name={{ timeName | lookup:forloop.counter0 }}
+                                           value="{{ task.t_percentage }}"/>
+                        </td>
+                        <td>
+                            <input class="form-control" id="typeBox" type="text" name="typeBox"
+                                   value="{{ task.project.projecttype.typename }}" disabled/>
+                        </td>
                     </tr>
-                    </thead>
-                    <tbody>
-                    {% for task in tasks %}
-                        <tr>
-                            <td>
-                                <select class="form-control" id="{{ dayID | lookup:forloop.counter0 }}" name={{ dayName | lookup:forloop.counter0 }}>
-                                    {% for day in weekdays %}
-                                        {% if day.date == task.workday %}
-                                            <option selected>{{ day | date:"D, M j" }}</option>
-                                        {% else %}
-                                            <option>{{ day | date:"D, M j" }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <select class="form-control" id={{ projectID | lookup:forloop.counter0}} name={{ projectName | lookup:forloop.counter0}}>
-                                    {% for project in projects %}
-                                        {% if task.project.project_id == project.project_id %}
-                                            <option selected>{{ project.project_id }}</option>
-                                        {% else %}
-                                            <option>{{ project.project_id }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <input class="form-control" id={{ timeID | lookup:forloop.counter0}} type="text" name={{ timeName | lookup:forloop.counter0}}
-                                       value={{ task.t_percentage }}>
-                            </td>
-                            <td>
-                                <input class="form-control" id="typeBox" type="text" name="typeBox"
-                                       value={{ task.project.projecttype.typename }} readonly>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <li>Sorry, no task in this list.</li>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                {% empty %}
+                    <li>Sorry, no task in this list.</li>
+                {% endfor %}
+                </tbody>
+            </table>
             <div class="form-group">
                 <div class="col-md-offset-0 col-md-1">
                     <input type="submit" value="保存" class="btn btn-default"/>
                 </div>
+            </div>
+            <div id="targettest">
+                Validate form here
             </div>
         </form>
     </div>
