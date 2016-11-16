@@ -10,7 +10,6 @@ from datetime import timedelta
 from app.models import TaskTime
 from app.models import Project
 from app.models import Person
-from .forms import TimelineForm
 
 WEEK_DAYS_NUM = 7
 DAY_WORKING_HOURS = 8.0
@@ -105,13 +104,16 @@ def validate_task(request):
     i = 0
     mappings = {}
     while i >= 0:
-        workday = request.POST.get(str(i) + DAY_ELEMENT_NAME)
+        key = create_name(i, DAY_ELEMENT_NAME, ELEMENT_SURNAME)
+        workday = request.POST.get(key)
         if workday is None:
             # POST iteration complete
             break
         else:
-            proj = request.POST.get(str(i) + PROJECT_ELEMENT_NAME)
-            hours = request.POST.get(str(i) + TASKTIME_ELEMENT_NAME)
+            key = create_name(i, PROJECT_ELEMENT_NAME, ELEMENT_SURNAME)
+            proj = request.POST.get(key)
+            key = create_name(i, TASKTIME_ELEMENT_NAME, ELEMENT_SURNAME)
+            hours = request.POST.get(key)
             if (proj is None) or (hours is None):
                 # validation failed
                 has_error = True
@@ -122,7 +124,7 @@ def validate_task(request):
                 # validation failed
                 has_error = True
                 break
-            if hours < 0.0:
+            if hours < 0.0 or hours > 1.0:
                 # validation failed
                 has_error = True
                 break
@@ -143,8 +145,8 @@ def validate_task(request):
 
 
 def create_names(number, element_name, surname):
-    """Create unique name for the form elements
-     for example: pub_date html input field, name=pub_date, surname=form,
+    """Create unique names for the form elements
+     for example: 'pub_date' form input element, element_name=pub_date, surname=form,
      then the format will be form-0-pub_date, form-1-pub_date
     @param number: the total number of elements, which is used to make name unique
     @param element_name: the form element base name
@@ -152,6 +154,18 @@ def create_names(number, element_name, surname):
     @return the name list
     """
     return ['%s-%d-%s' % (surname, n, element_name) for n in range(number)]
+
+
+def create_name(index, element_name, surname):
+    """Create a name for the form element
+     for example: 'pub_date' form input element, element_name=pub_date, surname=form,
+     then the format will be form-index-pub_date
+    @param index: an integer
+    @param element_name: the form element base name
+    @param surname: the form element's base name
+    @return the name
+    """
+    return '%s-%d-%s' % (surname, index, element_name)
 
 
 def timeline(request, year, month, week=0):
