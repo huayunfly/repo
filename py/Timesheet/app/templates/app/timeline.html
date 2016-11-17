@@ -1,5 +1,7 @@
 {% extends "app/layout.html" %}
 {% load lookup %}
+{% load multiply %}
+{% load staticfiles %}
 
 {% block content %}
 
@@ -50,7 +52,7 @@
                         <td>
                             <input class="form-control" id={{ timeID | lookup:forloop.counter0 }} type="text"
                                    name={{ timeName | lookup:forloop.counter0 }}
-                                           value="{{ task.t_percentage }}"/>
+                                           value="{{ task.t_percentage | multiply:100 | floatformat:0 }}"/>
                         </td>
                         <td>
                             <input class="form-control" id="typeBox" type="text" name="typeBox"
@@ -75,5 +77,6 @@
 {% endblock %}
 
 {% block scripts %}
-
+    <script type="text/javascript" src="{% static 'app/scripts/jquery.mask.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'app/scripts/fb.js' %}"></script>
 {% endblock %}
