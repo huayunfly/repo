@@ -20,6 +20,7 @@ DAY_ELEMENT_NAME = 'daySel'
 TASKTIME_ELEMENT_NAME = 'percentageInput'
 ELEMENT_SURNAME = 'form'
 ELEMENT_ID_SURNAME = 'id_form'
+TASKTIME_SUFFIX = '%'
 
 FORM_DATE_FORMAT = '%Y %a, %b %d'
 DELIMITER = '_'
@@ -95,14 +96,17 @@ def error(request):
 
 
 def validate_task(request):
-    """Validate the timeline form data
+    """Validate the timeline form data. The sum of task time in a day cannot be exceed 100(%)
+        It also merge the same project task entries in the same day.
+        For example: Mon, Jan 1 - T899 - 10(%); Mon, Jan - T899 - 20(%); = Mon, Jan - T899 - 30(%)
         for example: pub_date html input field, name=form-1-pub_date, id=id_form-1-pub_date
         @param request: HttpRequest object
         @return (has_error<BOOL>, data<dict>): tuple including validate result and table data mappings.
     """
     has_error = False
     i = 0
-    mappings = {}
+    task_mapping = {}
+    project_mapping = {}
     while i >= 0:
         key = create_name(i, DAY_ELEMENT_NAME, ELEMENT_SURNAME)
         workday = request.POST.get(key)
@@ -113,35 +117,37 @@ def validate_task(request):
             key = create_name(i, PROJECT_ELEMENT_NAME, ELEMENT_SURNAME)
             proj = request.POST.get(key)
             key = create_name(i, TASKTIME_ELEMENT_NAME, ELEMENT_SURNAME)
-            hours = request.POST.get(key)
-            if (proj is None) or (hours is None):
+            task_percentage = request.POST.get(key)
+            if (proj is None) or (task_percentage is None):
                 # validation failed
                 has_error = True
                 break
             try:
-                hours = float(hours)
+                task_percentage = int(task_percentage.rstrip(TASKTIME_SUFFIX))
             except ValueError:
                 # validation failed
                 has_error = True
                 break
-            if hours < 0.0 or hours > 1.0:
+            if task_percentage < 0 or task_percentage > 100:
                 # validation failed
                 has_error = True
                 break
-            # create a key
-            taskkey = workday + DELIMITER + proj
-            if taskkey in mappings:
-                if mappings[taskkey] + hours > 1.0:
+            # use workday as a key
+            if workday in task_mapping:
+                if task_mapping[workday] + task_percentage > 100:
                     # validation failed
                     has_error = True
                     break
-                else:
-                    # merge the task hours under the same day and project
-                    mappings[taskkey] += hours
             else:
-                mappings[taskkey] = hours
+                task_mapping[workday] = task_percentage
+            # create a key to merge the same project task in a single day
+            taskkey = workday + DELIMITER + proj
+            if taskkey in project_mapping:
+                project_mapping[taskkey] += task_percentage
+            else:
+                project_mapping[taskkey] = task_percentage
             i += 1
-    return [has_error, mappings]
+    return [has_error, project_mapping]
 
 
 def create_names(number, element_name, surname):
@@ -191,8 +197,8 @@ def timeline(request, year, month, week=0):
                 # INSERT or UPDATE a database row
                 try:
                     tm = TaskTime.objects.get(workday=day, project=project)
-                    tm.t_hours = percentage * DAY_WORKING_HOURS
-                    tm.t_percentage = percentage
+                    tm.t_hours = float('%.1f' % (percentage / 100.0 * DAY_WORKING_HOURS))
+                    tm.t_percentage = percentage / 100.0
                 except TaskTime.DoesNotExist:
                     tm = TaskTime(employee=user, t_hours=percentage * DAY_WORKING_HOURS,
                                   t_percentage=percentage, workday=day, project=project)
