@@ -29,7 +29,6 @@ function editrow(event) {
         }
         rename();
     }
-
 }
 
 function dragrow(md) {
@@ -134,15 +133,51 @@ function rename() {
     });
 }
 
+// Validate the user task input.
+// The task day and time are saved in two correlative arrays which combine to a mapping.
+// We check the user input digital number as the task time.
+// Under any given day, the tasks total time can not be larger than 1.0. When the validation
+// is failed, the input box border will be highlighted using Bootstrap.
 function validate() {
-    var mapping = {};
+    var days = [];
+    var times = [];
     var DELIMITER = "_";
     $("table tbody tr").each(function (index) {
         var $day = $("td select[name$='daySel']");
-        var $project = $("td select[name$='projectSel']");
         var $tasktime = $("td input[name$='percentageInput']");
-        var val = $(this).find($tasktime).val();
-        if (!isFloat(val) || parseFloat(val) < 0.0 || parseFloat(val) > 1.0) {
+        var day = $(this).find($day).val();
+        // Strip '%' in the tasktime if it has some.
+        var tasktime = String($(this).find($tasktime).val()).replace(/%/, "");
+        var has_error = false;
+        var val;
+        if (!isInteger(tasktime)) {
+            has_error = true;
+        }
+        else {
+            val = parseInt(tasktime);
+            if (val < 0 || val > 100) {
+                has_error = true;
+            }
+        }
+
+        if (!has_error) {
+            var index = getArrayIndex(days, day);
+            if (index >= 0) {
+                if (times[index] + val > 100) {
+                    has_error = true;
+                }
+                else
+                {
+                    times[index] += val;
+                }
+            }
+            else {
+                days[days.length] = day;
+                times[times.length] = val;
+            }
+        }
+
+        if (has_error) {
             $(this).find($tasktime).parent().attr("class", "has-error");
         }
         else {
@@ -156,6 +191,21 @@ function isFloat(str) {
         return true;
     }
     return false;
+}
+
+// Search a key in an array and return the key index.
+// @param arr: the array
+// @param key: the searching key
+// @return: -1 if it is failed, otherwise the key index
+function getArrayIndex(arr, key) {
+    var index = -1;
+    for (var i = 0; i < arr.length; i++) {
+        if (key == arr[i]) {
+            index = i;
+            break;
+        }
+    }
+    return index;
 }
 
 function isInteger(str) {
@@ -172,11 +222,7 @@ $(document).ready(function () {
     });
 
     $("input[name$='percentageInput']").each(function () {
-        $(this).mask("9?9%");
-        $(this).on("blur", function () {
-            var value = ($(this).val().length == 1) ? $(this).val() + '%' : $(this).val();
-            $(this).val(value);
-        });
+        $(this).mask('##000%', {reverse: true});
     });
 
     //$("table tbody tr").on("mousedown", dragrow);
