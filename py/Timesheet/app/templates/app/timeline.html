@@ -64,6 +64,15 @@
                 {% endfor %}
                 </tbody>
             </table>
+            <div id="context-menu">
+                <ul class="dropdown-menu" role="menu">
+                    <li><a tabindex="0">复制(Ctrl+C)</a></li>
+                    <li><a tabindex="1">粘贴(Ctrl+V)</a></li>
+                    <li><a tabindex="2">删除(Ctrl+D)</a></li>
+                    <li class="divider"></li>
+                    <li><a tabindex="3">添加新行(Ctrl+N)</a></li>
+                </ul>
+            </div>
             <div class="form-group">
                 <div class="col-md-offset-0 col-md-1">
                     <input type="submit" value="保存" class="btn btn-default"/>
@@ -78,5 +87,6 @@
 
 {% block scripts %}
     <script type="text/javascript" src="{% static 'app/scripts/jquery.mask.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'app/scripts/bootstrap-contextmenu.js' %}"></script>
     <script type="text/javascript" src="{% static 'app/scripts/fb.js' %}"></script>
 {% endblock %}
