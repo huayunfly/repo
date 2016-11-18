@@ -234,8 +234,11 @@ def timeline(request, year, month, week=0):
 
         # If there is no task, then we create empty tasks in the browser.
         task_num = len(tasks)
+        empty_task_num = PLACEHOLD_TASKTIME_NUM
         if 0 == task_num:
             task_num = PLACEHOLD_TASKTIME_NUM
+        else:
+            empty_task_num = 0
 
         return render(
             request,
@@ -253,6 +256,6 @@ def timeline(request, year, month, week=0):
                 'projectName': create_names(task_num, PROJECT_ELEMENT_NAME, ELEMENT_SURNAME),
                 'dayName': create_names(task_num, DAY_ELEMENT_NAME, ELEMENT_SURNAME),
                 'timeName': create_names(task_num, TASKTIME_ELEMENT_NAME, ELEMENT_SURNAME),
-                'emptyTasks': range(task_num),
+                'emptyTasks': range(empty_task_num),
             }
         )
