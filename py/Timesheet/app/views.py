@@ -21,6 +21,7 @@ TASKTIME_ELEMENT_NAME = 'percentageInput'
 ELEMENT_SURNAME = 'form'
 ELEMENT_ID_SURNAME = 'id_form'
 TASKTIME_SUFFIX = '%'
+PLACEHOLD_TASKTIME_NUM = 5
 
 FORM_DATE_FORMAT = '%Y %a, %b %d'
 DELIMITER = '_'
@@ -230,6 +231,12 @@ def timeline(request, year, month, week=0):
         tasks = TaskTime.objects.filter(employee__user__username=request.user.username,
                                                  workday__gte=weekdays[0],
                                                  workday__lte=weekdays[-1])
+
+        # If there is no task, then we create empty tasks in the browser.
+        task_num = len(tasks)
+        if 0 == task_num:
+            task_num = PLACEHOLD_TASKTIME_NUM
+
         return render(
             request,
             'app/timeline.html',
@@ -240,11 +247,12 @@ def timeline(request, year, month, week=0):
                 'tasks': tasks,
                 'projects': Project.objects.all(),
                 'weekdays': weekdays,
-                'projectID': create_names(len(tasks), PROJECT_ELEMENT_NAME, ELEMENT_ID_SURNAME),
-                'dayID': create_names(len(tasks), DAY_ELEMENT_NAME, ELEMENT_ID_SURNAME),
-                'timeID': create_names(len(tasks), TASKTIME_ELEMENT_NAME, ELEMENT_ID_SURNAME),
-                'projectName': create_names(len(tasks), PROJECT_ELEMENT_NAME, ELEMENT_SURNAME),
-                'dayName': create_names(len(tasks), DAY_ELEMENT_NAME, ELEMENT_SURNAME),
-                'timeName': create_names(len(tasks), TASKTIME_ELEMENT_NAME, ELEMENT_SURNAME),
+                'projectID': create_names(task_num, PROJECT_ELEMENT_NAME, ELEMENT_ID_SURNAME),
+                'dayID': create_names(task_num, DAY_ELEMENT_NAME, ELEMENT_ID_SURNAME),
+                'timeID': create_names(task_num, TASKTIME_ELEMENT_NAME, ELEMENT_ID_SURNAME),
+                'projectName': create_names(task_num, PROJECT_ELEMENT_NAME, ELEMENT_SURNAME),
+                'dayName': create_names(task_num, DAY_ELEMENT_NAME, ELEMENT_SURNAME),
+                'timeName': create_names(task_num, TASKTIME_ELEMENT_NAME, ELEMENT_SURNAME),
+                'emptyTasks': range(task_num),
             }
         )

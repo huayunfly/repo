@@ -60,7 +60,40 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <li>Sorry, no task in this list.</li>
+                    <li>您好，请填补工时</li>
+                {% endfor %}
+
+                {% comment %}
+                 Empty task items here
+                {% endcomment %}
+                {% for emptytask in emptyTasks %}
+                    <tr>
+                        <td>
+                            <select class="form-control" id="{{ dayID | lookup:forloop.counter0 }}"
+                                    name={{ dayName | lookup:forloop.counter0 }}>
+                                {% for day in weekdays %}
+                                        <option>{{ day | date:"D, M j" }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-control"
+                                    id={{ projectID | lookup:forloop.counter0 }} name={{ projectName | lookup:forloop.counter0 }}>
+                                {% for project in projects %}
+                                        <option>{{ project.project_id }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input class="form-control" id={{ timeID | lookup:forloop.counter0 }} type="text"
+                                   name={{ timeName | lookup:forloop.counter0 }}
+                                           value="0"/>
+                        </td>
+                        <td>
+                            <input class="form-control" id="typeBox" type="text" name="typeBox"
+                                   value="FA" disabled/>
+                        </td>
+                    </tr>
                 {% endfor %}
                 </tbody>
             </table>
