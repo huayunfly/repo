@@ -1,33 +1,16 @@
 function editrow(event) {
-    var $temp;
     // ctrl+c(67), ctrl+d(68), ctrl+v(86), ctrl+x(88)
     if (event.ctrlKey && 86 == event.which) {
         event.preventDefault();
-        alert($("body #clipboard").clone().html());
-        $(this).after($("body #clipboard").clone().html());
-        $(this).next().on("keydown", editrow);
-        alert($("table tbody tr:last").html());
-        rename();
+        pasteRow(this);
     }
     else if (event.ctrlKey && 67 == event.which) {
         event.preventDefault();
-        if (0 == $("body #clipboard").length) {
-            $temp = $("<form class='form-horizontal span6' id='clipboard'></form>").append($(this).clone());
-            $temp.hide();
-            $("body").append($temp);
-            alert("append");
-        }
-        else {
-            $("body #clipboard").html("<tr>" + $(this).html() + "</tr>");
-            alert("replace");
-        }
+        copyRow(this);
     }
     else if (event.ctrlKey && 68 == event.which) {
         event.preventDefault();
-        if ($(this).siblings().length > 0) {
-            $(this).remove();
-        }
-        rename();
+        deleteRow(this);
     }
 }
 
@@ -119,6 +102,41 @@ function dragrow(md) {
     });
 }
 
+function copyRow(obj) {
+    var $temp;
+    if (0 == $("body #clipboard").length) {
+        $temp = $("<form class='form-horizontal span6' id='clipboard'></form>").append($(obj).clone());
+        $temp.hide();
+        $("body").append($temp);
+        alert("append");
+    }
+    else {
+        $("body #clipboard").html("<tr>" + $(obj).html() + "</tr>");
+        alert("replace");
+    }
+}
+
+function pasteRow(obj) {
+    alert($("body #clipboard").clone().html());
+    $(obj).after($("body #clipboard").clone().html());
+    $(obj).next().on("keydown", editrow);
+    addMask();
+    addContextMenu();
+    //alert($("table tbody tr:last").html());
+    rename();
+}
+
+function deleteRow(obj) {
+    if ($(obj).siblings().length > 0) {
+        $(obj).remove();
+    }
+    rename();
+}
+
+function newRow(obj) {
+
+}
+
 function rename() {
     $("table tbody tr").each(function (index) {
         var day = $("td select[name$='daySel']");
@@ -166,8 +184,7 @@ function validate() {
                 if (times[index] + val > 100) {
                     has_error = true;
                 }
-                else
-                {
+                else {
                     times[index] += val;
                 }
             }
@@ -215,16 +232,48 @@ function isInteger(str) {
     return false;
 }
 
+// Add percentage mask for the input
+function addMask() {
+    $("input[name$='percentageInput']").mask('##000%', {reverse: true});
+    //$("input[name$='percentageInput']").each(function () {
+    //    $(this).mask('##000%', {reverse: true});
+    //});
+}
+
+// Add a context menu for the each tasktime row.
+function addContextMenu() {
+    $("tr").contextmenu({
+        target: '#context-menu',
+        before: function (e, context) {
+            // execute code before context menu if shown
+        },
+        onItem: function (context, e) {
+            // context is this
+            var index = $(e.currentTarget).find("a").attr("tabindex");
+            if (0 == index) {
+                copyRow(context);
+            }
+            else if (1 == index) {
+                pasteRow(context);
+            }
+            else if (2 == index) {
+                deleteRow(context);
+            }
+            else if (3 == index) {
+                newRow(context);
+            }
+        }
+    });
+}
+
+
 $(document).ready(function () {
     $("table tbody tr").on("keydown", editrow);
     $("#targettest").click(function () {
         validate();
     });
-
-    $("input[name$='percentageInput']").each(function () {
-        $(this).mask('##000%', {reverse: true});
-    });
-
+    addMask();
+    addContextMenu();
     //$("table tbody tr").on("mousedown", dragrow);
 });
 
