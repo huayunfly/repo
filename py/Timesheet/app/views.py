@@ -97,8 +97,9 @@ def error(request):
 
 
 def validate_task(request):
-    """Validate the timeline form data. The sum of task time in a day cannot be exceed 100(%)
-        It also merge the same project task entries in the same day.
+    """Validate the timeline form data. The sum of task time in a day cannot be exceed 100(%).
+        Empty task time equal 0(%) will ignored.
+        It also merges the same project task entries in the same day.
         For example: Mon, Jan 1 - T899 - 10(%); Mon, Jan - T899 - 20(%); = Mon, Jan - T899 - 30(%)
         for example: pub_date html input field, name=form-1-pub_date, id=id_form-1-pub_date
         @param request: HttpRequest object
@@ -133,8 +134,12 @@ def validate_task(request):
                 # validation failed
                 has_error = True
                 break
-            # use workday as a key
+            if 0 == task_percentage:
+                # drop the empty task time
+                i += 1
+                continue
             if workday in task_mapping:
+                # use workday as a key
                 if task_mapping[workday] + task_percentage > 100:
                     # validation failed
                     has_error = True
@@ -195,14 +200,17 @@ def timeline(request, year, month, week=0):
                 percentage = value
                 # Retrieving a single object with get()
                 user = Person.objects.get(user=request.user)
+                t_percentage = percentage / 100.0
+                t_hours = float('%.1f' % (t_percentage * DAY_WORKING_HOURS))
                 # INSERT or UPDATE a database row
                 try:
                     tm = TaskTime.objects.get(workday=day, project=project)
-                    tm.t_hours = float('%.1f' % (percentage / 100.0 * DAY_WORKING_HOURS))
-                    tm.t_percentage = percentage / 100.0
+                    tm.t_hours = t_hours
+                    tm.t_percentage = t_percentage
                 except TaskTime.DoesNotExist:
-                    tm = TaskTime(employee=user, t_hours=percentage * DAY_WORKING_HOURS,
-                                  t_percentage=percentage, workday=day, project=project)
+                    # add a new row in DB
+                    tm = TaskTime(employee=user, t_hours=t_hours,
+                                  t_percentage=t_percentage, workday=day, project=project)
                 except TaskTime.MultipleObjectsReturned:
                     return HttpResponseRedirect('/error/')
                 tm.save()
