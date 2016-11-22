@@ -8,6 +8,7 @@ import django.contrib.auth.views
 
 import app.forms
 import app.views
+from app.utilities.timekit import monthweek
 
 # Uncomment the next lines to enable the admin:
 # from django.conf.urls import include
@@ -39,6 +40,8 @@ urlpatterns = [
             {
                 'title': 'Log in',
                 'year': datetime.now().year,
+                'currentweek': '/timeline/%s/%s/%s' %
+                            (datetime.now().year, datetime.now().month, monthweek(datetime.now())),
             }
         },
         name='login'),
