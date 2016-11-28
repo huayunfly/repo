@@ -7,6 +7,12 @@
 
     <h2>{{ title }}.</h2>
     <h3>{{ message }}</h3>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" aria-valuenow="60"
+             aria-valuemin="0" aria-valuemax="100" style="width: 40%;">
+            <span class="sr-only">40% 完成</span>
+        </div>
+    </div>
 
     <div id="build">
         <form role="form" id=target action="." method="post" class="form-horizontal">
@@ -72,7 +78,7 @@
                             <select class="form-control" id="{{ dayID | lookup:forloop.counter0 }}"
                                     name={{ dayName | lookup:forloop.counter0 }}>
                                 {% for day in weekdays %}
-                                        <option>{{ day | date:"D, M j" }}</option>
+                                    <option>{{ day | date:"D, M j" }}</option>
                                 {% endfor %}
                             </select>
                         </td>
@@ -80,7 +86,7 @@
                             <select class="form-control"
                                     id={{ projectID | lookup:forloop.counter0 }} name={{ projectName | lookup:forloop.counter0 }}>
                                 {% for project in projects %}
-                                        <option>{{ project.project_id }}</option>
+                                    <option>{{ project.project_id }}</option>
                                 {% endfor %}
                             </select>
                         </td>
