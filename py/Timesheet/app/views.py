@@ -11,6 +11,8 @@ from app.models import TaskTime
 from app.models import Project
 from app.models import Person
 
+from django.utils.translation import ugettext as _
+
 WEEK_DAYS_NUM = 7
 DAY_WORKING_HOURS = 8.0
 
@@ -252,8 +254,10 @@ def timeline(request, year, month, week=0):
             request,
             'app/timeline.html',
             {
-                'title': 'About',
-                'message': 'Your timeline page',
+                'queryMonth': int(month),
+                'queryYear': int(year),
+                'queryWeek': int(week),
+                'message': 'Hello',
                 'year': datetime.now().year,
                 'tasks': tasks,
                 'projects': Project.objects.all(),

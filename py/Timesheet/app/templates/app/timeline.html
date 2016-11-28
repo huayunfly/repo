@@ -2,10 +2,11 @@
 {% load lookup %}
 {% load multiply %}
 {% load staticfiles %}
+{% load l10n %}
 
 {% block content %}
 
-    <h2>{{ title }}.</h2>
+    <h2>{{ queryYear }}年{{ queryMonth }}月 第{{ queryWeek }}周</h2>
     <h3>{{ message }}</h3>
     <div class="progress">
         <div class="progress-bar" role="progressbar" aria-valuenow="60"
@@ -17,7 +18,7 @@
     <div id="build">
         <form role="form" id=target action="." method="post" class="form-horizontal">
             {% csrf_token %}
-            <legend class="valtype" data-valtype="text">在本区域填写工时（%计）</legend>
+            <legend class="valtype" data-valtype="text">工时表（%计）</legend>
             <table class="table table-hover">
                 <caption>项目工时</caption>
                 <thead>
@@ -36,7 +37,7 @@
                                     name={{ dayName | lookup:forloop.counter0 }}>
                                 {% for day in weekdays %}
                                     {% if day.date == task.workday %}
-                                        <option selected>{{ day | date:"D, M j" }}</option>
+                                        <option selected>{{ day | date:"D, M j" | localize}}</option>
                                     {% else %}
                                         <option>{{ day | date:"D, M j" }}</option>
                                     {% endif %}
@@ -66,7 +67,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <li>您好，请填补工时</li>
+                    <li>你好，请填补工时</li>
                 {% endfor %}
 
                 {% comment %}
