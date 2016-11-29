@@ -40,8 +40,8 @@ urlpatterns = [
             {
                 'title': 'Log in',
                 'year': datetime.now().year,
-                'currentweek': '/timeline/%s/%s/%s' %
-                            (datetime.now().year, datetime.now().month, monthweek(datetime.now())),
+                'currentweek': '/timeline/%d/%02d/%d/' %
+                (datetime.now().year, datetime.now().month, monthweek(datetime.now())),
             }
         },
         name='login'),
