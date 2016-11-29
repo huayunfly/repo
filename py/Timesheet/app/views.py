@@ -1,7 +1,6 @@
 """
 Definition of views.
 """
-import calendar
 from django.shortcuts import render
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
@@ -10,8 +9,7 @@ from datetime import timedelta
 from app.models import TaskTime
 from app.models import Project
 from app.models import Person
-
-from django.utils.translation import ugettext as _
+import utils.timekit
 
 WEEK_DAYS_NUM = 7
 DAY_WORKING_HOURS = 8.0
@@ -26,6 +24,7 @@ TASKTIME_SUFFIX = '%'
 PLACEHOLD_TASKTIME_NUM = 5
 
 FORM_DATE_FORMAT = '%Y %a, %b %d'
+WEEK_LINK_FORMAT = '/timeline/%d/%02d/%d/'
 DELIMITER = '_'
 
 
@@ -218,22 +217,7 @@ def timeline(request, year, month, week=0):
                 tm.save()
             return HttpResponseRedirect('/thanks/')
     else:
-        weeks = calendar.monthcalendar(int(year), int(month))
-        weeknumber = int(week)
-        if 0 == weeknumber or weeknumber > len(weeks):
-            weeknumber = -1
-        else:
-            weeknumber -= 1
-
-        # Find the first day in one week of this month like [0, 0, 0, 0, 1, 2, 3]
-        first = 0
-        for day in range(0, WEEK_DAYS_NUM, 1):
-            if 0 != weeks[weeknumber][day]:
-                first = day
-                break
-
-        # Make a valid week range which may cover the last month or the next month.
-        monday = datetime(int(year), int(month), weeks[weeknumber][first]) - timedelta(days=first)
+        monday = utils.timekit.getmonday(int(year), int(month), int(week))
         weekdays = [monday]
         for day in range(1, WEEK_DAYS_NUM, 1):
             weekdays.append(monday + timedelta(days=day))
@@ -241,6 +225,10 @@ def timeline(request, year, month, week=0):
         tasks = TaskTime.objects.filter(employee__user__username=request.user.username,
                                                  workday__gte=weekdays[0],
                                                  workday__lte=weekdays[-1])
+
+        nextweek = utils.timekit.nextweek(int(year), int(month), int(week))
+        lastweek = utils.timekit.lastweek(int(year), int(month), int(week))
+        theweek = utils.timekit.currentweek()
 
         # If there is no task, then we create empty tasks in the browser.
         task_num = len(tasks)
@@ -257,6 +245,9 @@ def timeline(request, year, month, week=0):
                 'queryMonth': int(month),
                 'queryYear': int(year),
                 'queryWeek': int(week),
+                'nextLink': WEEK_LINK_FORMAT % (nextweek[0], nextweek[1], nextweek[2]),
+                'prevLink': WEEK_LINK_FORMAT % (lastweek[0], lastweek[1], lastweek[2]),
+                'currentLink': WEEK_LINK_FORMAT % (theweek[0], theweek[1], theweek[2]),
                 'message': 'Hello',
                 'year': datetime.now().year,
                 'tasks': tasks,
