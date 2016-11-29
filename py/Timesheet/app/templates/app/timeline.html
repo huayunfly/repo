@@ -13,12 +13,12 @@
             <nav class="navbar navbar-default" role="navigation">
                 <div class="container-fluid">
                     <div class="navbar-header">
-                        <a class="navbar-brand" href="/timeline/now">本周</a>
+                        <a class="navbar-brand" href={{ currentLink }}>本周</a>
                     </div>
                     <div>
                         <ul class="nav navbar-nav">
-                            <li><a href="/timeline/prev">上周</a></li>
-                            <li><a href="/timeline/next">下周</a></li>
+                            <li><a href={{ prevLink }}>上周&lt;</a></li>
+                            <li><a href={{ nextLink }}>&gt;下周</a></li>
                             <li><a href="#">日历</a></li>
                         </ul>
                     </div>
@@ -30,7 +30,7 @@
 
     <h4>周进度 (40%完成)</h4>
 
-    <div class="progress col-sm-6 col-md-push-0" style="padding-left: 0px;padding-right: 0px;">
+    <div class="progress col-sm-6 col-sm-push-0" style="padding-left: 0px;padding-right: 0px;">
         {% comment %}
     'sr-only' class is used to hide information intended only for screen readers from the layout
     of the rendered page.
@@ -142,7 +142,7 @@
                 </ul>
             </div>
             <div class="form-group">
-                <div class="col-md-offset-0 col-md-1">
+                <div class="col-sm-1 col-sm-offset-0">
                     <input type="submit" value="保存" class="btn btn-default"/>
                 </div>
             </div>
