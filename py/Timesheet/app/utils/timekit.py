@@ -2,7 +2,7 @@
 Definition of datetime helper functions.
 """
 
-from datetime import datetime
+from datetime import date
 from datetime import timedelta
 import calendar
 
@@ -53,7 +53,7 @@ def currentweek():
     Get the current week tuple.
     @return: current week tuple (year, month, week)
     """
-    today = datetime.now()
+    today = date.today()
     return today.year, today.month, monthweek(today)
 
 
@@ -64,7 +64,7 @@ def getmonday(year, month, week):
     @param month: the month number, 12 e.g.
     @param week: the week number, start from 1. If week equals 0,
                     it will redirect to the last week.
-    @return: Monday in datetime
+    @return: Monday in date
     """
     weeks = calendar.monthcalendar(year, month)
     if 0 == week or week > len(weeks):
@@ -77,7 +77,7 @@ def getmonday(year, month, week):
         if 0 != weeks[week][day]:
             first = day
             break
-    return datetime(int(year), int(month), weeks[week][first]) - timedelta(days=first)
+    return date(int(year), int(month), weeks[week][first]) - timedelta(days=first)
 
 
 
