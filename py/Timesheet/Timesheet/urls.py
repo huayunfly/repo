@@ -9,6 +9,7 @@ import django.contrib.auth.views
 import app.forms
 import app.views
 from app.utils.timekit import monthweek
+from app.utils.urls import the_week_url
 
 # Uncomment the next lines to enable the admin:
 # from django.conf.urls import include
@@ -18,10 +19,11 @@ from app.utils.timekit import monthweek
 urlpatterns = [
     # Examples:
     url(r'^$', app.views.home, name='home'),
+    url(r'^start/$', app.views.start, name='start'),
     url(r'^contact/$', app.views.contact, name='contact'),
     url(r'^about/$', app.views.about, name='about'),
     url(r'^thanks/$', app.views.thanks, name='thanks'),
-    url(r'error/$', app.views.error, name='error'),
+    url(r'^error/$', app.views.error, name='error'),
     url(r'^timeline/(?P<year>[0-9]{4})/(?P<month>[0-9]{2})/(?P<week>[0-6]{1})/$', app.views.timeline, name='timeline'),
 
     # Here's what django.contrib.auth.views.login does:
@@ -40,8 +42,7 @@ urlpatterns = [
             {
                 'title': 'Log in',
                 'year': datetime.now().year,
-                'currentweek': '/timeline/%d/%02d/%d/' %
-                (datetime.now().year, datetime.now().month, monthweek(datetime.now())),
+                'currentweek': the_week_url(),
             }
         },
         name='login'),

@@ -10,6 +10,7 @@ from app.models import TaskTime
 from app.models import Project
 from app.models import Person
 import utils.timekit
+from utils.urls import the_week_url
 
 WEEK_DAYS_NUM = 7
 DAY_WORKING_HOURS = 8.0
@@ -39,6 +40,15 @@ def home(request):
             'year': datetime.now().year,
         }
     )
+
+
+def start(request):
+    """Renders the start page."""
+    assert isinstance(request, HttpRequest)
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(the_week_url())
+    else:
+        return HttpResponseRedirect('/')
 
 
 def contact(request):
