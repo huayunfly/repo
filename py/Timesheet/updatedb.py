@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     from django.contrib.auth.models import User
     from django.contrib.auth.hashers import make_password
-    from app.models import Department, Person, Project, ProjectGrp, TaskTime, ProjectType
+    from app.models import Department, Person, Project, ProjectGrp, TaskTime, ProjectType, NoWorkingDay
 
     # using unicode as the password coding
     yun_hua = User(username='yun_hua', email='yun_hua@yashentech.com', password=make_password('hello'))
@@ -92,5 +92,14 @@ if __name__ == "__main__":
     t2.save()
     t3 = TaskTime(employee=person1, t_hours=1.6, t_percentage=0.2, workday=date.today(), project=project3)
     t3.save()
+
+    holiday1 = NoWorkingDay(date=date(year=2016, month=12, day=3), summary='Weekend')
+    holiday1.save()
+    holiday2 = NoWorkingDay(date=date(year=2016, month=12, day=4), summary='Weekend')
+    holiday2.save()
+    holiday3 = NoWorkingDay(date=date(year=2016, month=12, day=10), summary='Weekend')
+    holiday3.save()
+    holiday4 = NoWorkingDay(date=date(year=2016, month=12, day=11), summary='Weekend')
+    holiday4.save()
 
     print 'Database creation successful'
