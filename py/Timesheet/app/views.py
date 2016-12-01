@@ -9,6 +9,7 @@ from datetime import timedelta
 from app.models import TaskTime
 from app.models import Project
 from app.models import Person
+from app.models import NoWorkingDay
 import utils.timekit
 from utils.urls import the_week_url
 
@@ -229,12 +230,17 @@ def timeline(request, year, month, week=0):
     else:
         monday = utils.timekit.getmonday(int(year), int(month), int(week))
         weekdays = [monday]
+        no_working_q = NoWorkingDay.objects.filter(date__lte=monday + timedelta(days=WEEK_DAYS_NUM - 1),
+                                                 date__gte=monday)
+        no_working_days = [item.date for item in no_working_q]
         for day in range(1, WEEK_DAYS_NUM, 1):
-            weekdays.append(monday + timedelta(days=day))
+            nextday = monday + timedelta(days=day)
+            if nextday not in no_working_days:
+                weekdays.append(nextday)
 
         tasks = TaskTime.objects.filter(employee__user__username=request.user.username,
-                                                 workday__gte=weekdays[0],
-                                                 workday__lte=weekdays[-1])
+                                        workday__gte=weekdays[0],
+                                        workday__lte=weekdays[-1])
 
         nextweek = utils.timekit.nextweek(int(year), int(month), int(week))
         lastweek = utils.timekit.lastweek(int(year), int(month), int(week))
