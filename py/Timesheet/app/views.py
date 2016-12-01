@@ -195,6 +195,8 @@ def create_name(index, element_name, surname):
 def timeline(request, year, month, week=0):
     """Renders the timeline page."""
     assert isinstance(request, HttpRequest)
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('/')
 
     if request.method == 'POST':
         result = validate_task(request)
