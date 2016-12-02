@@ -227,7 +227,7 @@ function setProgress(progress_id, percent, suffix) {
 function convertWeekdayName(day_name)
 {
     var day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    var converted = ['周一','周二','周三','周四','周五','周六','周日']
+    var converted = ['周一','周二','周三','周四','周五','周六','周日'];
     var index = getArrayIndex(day_names, day_name);
     if (index >= 0)
     {
