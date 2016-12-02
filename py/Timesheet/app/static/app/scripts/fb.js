@@ -122,6 +122,7 @@ function pasteRow(obj) {
     $(obj).next().on("keydown", editrow);
     addMask();
     addContextMenu();
+    bindValidate();
     //alert($("table tbody tr:last").html());
     rename();
 }
@@ -159,7 +160,7 @@ function rename() {
 function validate() {
     var days = [];
     var times = [];
-    var DELIMITER = "_";
+    var DELIMITER = '_';
     $("table tbody tr").each(function (index) {
         var $day = $("td select[name$='daySel']");
         var $tasktime = $("td input[name$='percentageInput']");
@@ -191,7 +192,13 @@ function validate() {
             else {
                 days[days.length] = day;
                 times[times.length] = val;
+                index = times.length
             }
+            // Re-format 'Mon, Nov 28' to 'Mon_Nov_28' matching the progress bar id.
+            // Get week number in 'Mon, Nov 28' as 'Mon'
+            var progress_id = day.replace(/\s+/g, DELIMITER).replace(',', '');
+            var suffix = day.split(',')[0];
+            setProgress(progress_id, times[index], convertWeekdayName(suffix));
         }
 
         if (has_error) {
@@ -201,6 +208,35 @@ function validate() {
             $(this).find($tasktime).parent().attr("class", null);
         }
     });
+}
+
+// Set the progress bar element content
+// @param progress_id: the progress bar element ID
+// @param percent: the progress range [0, 100]
+// @param suffix: displaying suffix adding after 'percent%', such as 100% Mon, where the suffix is 'Mon'
+function setProgress(progress_id, percent, suffix) {
+    var $progress = $("#" + progress_id);
+    $progress.find(".progress-bar").attr("aria-valuenow", percent);
+    $progress.find(".progress-bar").attr("style", "width:" + percent + "%;");
+    $progress.find(".progress-bar span").text(percent + '%' + suffix);
+}
+
+// Convert the week day name to another. For example: Mon -> 周一
+// @param day_name: the original weekday name.
+// @return converted name, 周一 e.g. If there is no match, return empty a string ''.
+function convertWeekdayName(day_name)
+{
+    var day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    var converted = ['周一','周二','周三','周四','周五','周六','周日']
+    var index = getArrayIndex(day_names, day_name);
+    if (index >= 0)
+    {
+        return converted[index];
+    }
+    else
+    {
+        return '';
+    }
 }
 
 function isFloat(str) {
@@ -240,6 +276,13 @@ function addMask() {
     //});
 }
 
+// Bind task time validate to input elements
+function bindValidate() {
+    $("table tbody tr input").change(function () {
+        validate();
+    });
+}
+
 // Add a context menu for the each tasktime row.
 function addContextMenu() {
     $("tr").contextmenu({
@@ -274,6 +317,8 @@ $(document).ready(function () {
     });
     addMask();
     addContextMenu();
+    bindValidate();
+    validate();
     //$("table tbody tr").on("mousedown", dragrow);
 });
 
