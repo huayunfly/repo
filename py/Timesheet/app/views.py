@@ -119,7 +119,7 @@ def validate_task(request):
     """
     has_error = False
     i = 0
-    task_mapping = {}
+    day_task_mapping = {}
     project_mapping = {}
     while i >= 0:
         key = create_name(i, DAY_ELEMENT_NAME, ELEMENT_SURNAME)
@@ -150,14 +150,16 @@ def validate_task(request):
                 # drop the empty task time
                 i += 1
                 continue
-            if workday in task_mapping:
+            if workday in day_task_mapping:
                 # use workday as a key
-                if task_mapping[workday] + task_percentage > 100:
+                if day_task_mapping[workday] + task_percentage > 100:
                     # validation failed
                     has_error = True
                     break
+                else:
+                    day_task_mapping[workday] += task_percentage
             else:
-                task_mapping[workday] = task_percentage
+                day_task_mapping[workday] = task_percentage
             # create a key to merge the same project task in a single day
             taskkey = workday + DELIMITER + proj
             if taskkey in project_mapping:
