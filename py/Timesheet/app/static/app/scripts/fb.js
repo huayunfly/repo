@@ -190,9 +190,9 @@ function validate() {
                 }
             }
             else {
-                days[days.length] = day;
-                times[times.length] = val;
-                index = times.length
+                days.push(day);
+                times.push(val);
+                index = times.length - 1;
             }
             // Re-format 'Mon, Nov 28' to 'Mon_Nov_28' matching the progress bar id.
             // Get week number in 'Mon, Nov 28' as 'Mon'
