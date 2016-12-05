@@ -73,8 +73,8 @@ def about(request):
         request,
         'app/about.html',
         {
-            'title': 'About',
-            'message': 'Your application description page.',
+            'title': 'Timesheet v0.1',
+            'message': 'IT service ext.5831',
             'year': datetime.now().year,
         }
     )
@@ -198,12 +198,18 @@ def timeline(request, year, month, week=0):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('/')
 
+    monday = utils.timekit.getmonday(int(year), int(month), int(week))
+    sunday = monday + timedelta(days=WEEK_DAYS_NUM - 1)
+
     if request.method == 'POST':
         result = validate_task(request)
         if result[0]:
             return HttpResponseRedirect('/error/')
         else:
-            # update the database
+            # Query in the week.
+            week_tasks = TaskTime.objects.filter(employee__user__username=request.user.username,
+                                                 workday__lte=sunday, workday__gte=monday)
+            # Synchronize the form data and the database.
             for key, value in result[1].iteritems():
                 day_project = key.split(DELIMITER)
                 # day string format: 2016 Fri, Oct 21
@@ -212,13 +218,13 @@ def timeline(request, year, month, week=0):
                 day = datetime(datetime0.year, datetime0.month, datetime0.day)
                 project = Project.objects.get(project_id=day_project[1])
                 percentage = value
-                # Retrieving a single object with get()
+                # Retrieving a single object with get().
                 user = Person.objects.get(user=request.user)
                 t_percentage = percentage / 100.0
                 t_hours = float('%.1f' % (t_percentage * DAY_WORKING_HOURS))
-                # INSERT or UPDATE a database row
+                # INSERT or UPDATE a database row, the updated one wil be excluded from Query.
                 try:
-                    tm = TaskTime.objects.get(workday=day, project=project)
+                    tm = week_tasks.get(workday=day, project=project)
                     tm.t_hours = t_hours
                     tm.t_percentage = t_percentage
                 except TaskTime.DoesNotExist:
@@ -228,11 +234,13 @@ def timeline(request, year, month, week=0):
                 except TaskTime.MultipleObjectsReturned:
                     return HttpResponseRedirect('/error/')
                 tm.save()
+                week_tasks = week_tasks.exclude(workday=day, project=project)
+            # Delete the row not in the user form.
+            week_tasks.delete()
             return HttpResponseRedirect('/thanks/')
     else:
-        monday = utils.timekit.getmonday(int(year), int(month), int(week))
         weekdays = [monday]
-        no_working_q = NoWorkingDay.objects.filter(date__lte=monday + timedelta(days=WEEK_DAYS_NUM - 1),
+        no_working_q = NoWorkingDay.objects.filter(date__lte=sunday,
                                                  date__gte=monday)
         no_working_days = [item.date for item in no_working_q]
         for day in range(1, WEEK_DAYS_NUM, 1):
