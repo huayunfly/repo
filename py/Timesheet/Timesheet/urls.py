@@ -8,8 +8,8 @@ import django.contrib.auth.views
 
 import app.forms
 import app.views
-from app.utils.timekit import monthweek
 from app.utils.urls import the_week_url
+from app.admin import admin_site
 
 # Uncomment the next lines to enable the admin:
 # from django.conf.urls import include
@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^about/$', app.views.about, name='about'),
     url(r'^thanks/$', app.views.thanks, name='thanks'),
     url(r'^error/$', app.views.error, name='error'),
+    url(r'^admin/', admin_site.urls), # NO '^admin/$' for the pattern [u'admin/$(?P<app_label>app)/$']
     url(r'^timeline/(?P<year>[0-9]{4})/(?P<month>[0-9]{2})/(?P<week>[0-6]{1})/$', app.views.timeline, name='timeline'),
 
     # Here's what django.contrib.auth.views.login does:
