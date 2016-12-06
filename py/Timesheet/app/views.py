@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
 """
-Definition of views.
+@summary: Definition of views.
+@author: Yun Hua, yun_hua@yashentech.com
+@date: 2016.12.06
 """
 from django.shortcuts import render
 from django.http import HttpRequest
@@ -73,8 +76,9 @@ def about(request):
         request,
         'app/about.html',
         {
-            'title': 'Timesheet v0.1',
+            'title': 'Timesheet web 0.1',
             'message': 'IT service ext.5831',
+            'mail': 'yun_hua@yashentech.com',
             'year': datetime.now().year,
         }
     )
