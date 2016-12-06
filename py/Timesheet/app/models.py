@@ -1,3 +1,4 @@
+
 """
 Definition of models.
 """
@@ -49,6 +50,7 @@ class Project(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE, name='pm')
     projectgrp = models.ForeignKey(ProjectGrp, on_delete=models.CASCADE, null=True)
     projecttype = models.ForeignKey(ProjectType, on_delete=models.CASCADE, default='FA')
+    members = models.ManyToManyField(Person, related_name='members')
 
 
 class TaskTime(models.Model):
