@@ -64,12 +64,16 @@ if __name__ == "__main__":
     type5 = ProjectType(typename='Other', summary='其他')
     type5.save()
 
+    grp1 = ProjectGrp(grp_id='10000', summary='公司项目集', owner=person_admin)
+    grp1.save()
+
     project1 = Project(project_id='9G90401',
                        summary='煤气化装置项目',
                        isassociated=False, isreserved=False,
                        doclink='//fileserver2/platform/9G90401',
                        pm=person1,
-                       projecttype=type1)
+                       projecttype=type1,
+                       members=[person1, person2])
     project1.save()
     project2 = Project(project_id='8H10001',
                        summary='浙大八通道',
