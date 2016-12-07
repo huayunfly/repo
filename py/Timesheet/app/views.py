@@ -15,6 +15,7 @@ from app.models import Person
 from app.models import NoWorkingDay
 import utils.timekit
 from utils.urls import the_week_url
+from urlparse import urlparse, parse_qs
 
 WEEK_DAYS_NUM = 7
 DAY_WORKING_HOURS = 8.0
@@ -30,7 +31,12 @@ PLACEHOLD_TASKTIME_NUM = 5
 
 FORM_DATE_FORMAT = '%Y %a, %b %d'
 WEEK_LINK_FORMAT = '/timeline/%d/%02d/%d/'
+REPORT_DATE_FORMAT ='%Y-%m-%d'
 DELIMITER = '_'
+
+REPORT_Q_PROJECT = 'project_id'
+REPORT_Q_DATE_BEGIN = 'date__gte'
+REPORT_Q_DATE_END = 'date__lt'
 
 
 def home(request):
@@ -199,7 +205,12 @@ def create_name(index, element_name, surname):
 
 
 def timeline(request, year, month, week=0):
-    """Renders the timeline page."""
+    """Renders the timeline page.
+    @param request: a HttpRequest
+    @param year: year
+    @param month: month
+    @param week: the week number of a month
+    """
     assert isinstance(request, HttpRequest)
     if not request.user.is_authenticated:
         return HttpResponseRedirect('/')
@@ -292,5 +303,57 @@ def timeline(request, year, month, week=0):
                 'dayName': create_names(task_num, DAY_ELEMENT_NAME, ELEMENT_SURNAME),
                 'timeName': create_names(task_num, TASKTIME_ELEMENT_NAME, ELEMENT_SURNAME),
                 'emptyTasks': range(empty_task_num),
+            }
+        )
+
+
+def report(request):
+    """Generate the report."""
+    assert isinstance(request, HttpRequest)
+    if request.method == 'POST':
+        pass
+    else:
+        today = datetime.today()
+        month_start = datetime(today.year, today.month, 1)
+        if today.month + 1 > 12:
+            next_month_start = datetime(today.year + 1, 1, 1)
+        else:
+            next_month_start = datetime(today.year, today.month + 1, 1)
+
+        if today.month - 1 < 1:
+            last_month_start = datetime(today.year - 1, 12, 1)
+        else:
+            last_month_start = datetime(today.year, today.month - 1, 1)
+        year_start = datetime(today.year, 1, 1)
+        next_year_start = datetime(today.year + 1, 1, 1)
+
+        qs = parse_qs(urlparse(request.get_raw_uri()).query)
+        project_id_l = qs.get(REPORT_Q_PROJECT)
+        date_begin_l = qs.get(REPORT_Q_DATE_BEGIN)
+        date_end_l = qs.get(REPORT_Q_DATE_END)
+
+        if (project_id_l is not None) and (date_begin_l is not None) and (date_end_l is not None):
+            project_id = project_id_l[0]
+            date_begin = datetime.strptime(date_begin_l[0], REPORT_DATE_FORMAT)
+            date_end = datetime.strptime(date_end_l[0], REPORT_DATE_FORMAT)
+
+        tasks = TaskTime.objects.filter(project__project_id=project_id,
+                                        workday__gte=date_begin,
+                                        workday__lt=date_end)
+
+        return render(
+            request,
+            'app/report.html',
+            {
+                'title': 'Report',
+                'message': 'Project related',
+                'year': datetime.now().year,
+                'projects': Project.objects.all(),
+                'month_start': month_start.strftime(REPORT_DATE_FORMAT),
+                'last_month_start': last_month_start.strftime(REPORT_DATE_FORMAT),
+                'next_month_start': next_month_start.strftime(REPORT_DATE_FORMAT),
+                'year_start': year_start.strftime(REPORT_DATE_FORMAT),
+                'next_year_start': next_year_start.strftime(REPORT_DATE_FORMAT),
+                'tasks': tasks,
             }
         )
