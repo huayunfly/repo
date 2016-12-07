@@ -1,0 +1,68 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+    <h2>{{ title }}</h2>
+    <h3>{{ message }}</h3>
+
+    <div id="changelist-filter">
+        <h2>筛选器</h2>
+
+        <h3> 按项目 id </h3>
+        <ul class="list-group">
+
+            <li class="selected">
+                <a href="?">All</a></li>
+            {% for project in projects %}
+                <li>
+                    <a href="?project_id={{ project.project_id }}">{{ project.project_id }}</a></li>
+            {% endfor %}
+
+        </ul>
+
+        <h3> 按日期 </h3>
+        <ul class="list-group">
+
+            <li>
+                <a href="?">全部时间</a></li>
+            <li>
+                <a href="?date__gte={{ last_month_start }}&date__lt={{ month_start }}">上月</a></li>
+            <li class="selected">
+                <a href="?date__gte={{ month_start }}&date__lt={{ next_month_start }}">本月</a></li>
+            <li>
+                <a href="?date__gte={{ year_start }}&date__lt={{ next_year_start }}">今年</a></li>
+        </ul>
+
+    </div>
+
+    <div class="results">
+        <table class="table table-striped" id="result_list">
+            <thead>
+            <tr>
+                <th scope="col" class="sortable column-project_id">
+                    <div class="text"><a href="?o=1">用户</a></div>
+                </th>
+
+                <th scope="col" class="sortable column-summary">
+                    <div class="text"><a href="?o=2">日期</a></div>
+                </th>
+
+                <th scope="col" class="sortable column-doclink">
+                    <div class="text"><a href="?o=3">工时</a></div>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for task in tasks %}
+                <tr>
+                    <td>{{ task.employee.user.username }}</td>
+                    <td>{{ task.workday | date:"Y-m-d" }}</td>
+                    <td>{{ task.t_hours }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
