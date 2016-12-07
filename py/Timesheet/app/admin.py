@@ -9,6 +9,7 @@ from .models import Person
 from .models import Department
 from .models import ProjectType
 from .models import NoWorkingDay
+from .models import ProjectGrp
 
 
 class MyAdminSite(AdminSite):
@@ -20,28 +21,33 @@ admin_site = MyAdminSite(name='Admin Console')
 
 @admin.register(Person, site=admin_site)
 class PersonAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('user', 'employee_id', 'department')
 
 
 @admin.register(Project, site=admin_site)
 class ProjectAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('project_id', 'summary', 'doclink', 'pm')
 
 
 @admin.register(Department, site=admin_site)
 class DeptAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('dept_id', 'name', 'summary')
 
 
 @admin.register(ProjectType, site=admin_site)
 class ProjectTypeAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('typename', 'summary')
 
 
 @admin.register(NoWorkingDay, site=admin_site)
 class NoWorkingDayAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('__str__', 'summary')
+    list_filter = ('date',)
 
+
+@admin.register(ProjectGrp, site=admin_site)
+class ProjectGrpAdmin(admin.ModelAdmin):
+    list_display = ('grp_id', 'summary', 'owner')
 
 
 
