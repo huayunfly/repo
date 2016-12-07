@@ -14,6 +14,9 @@ class Department(models.Model):
     name = models.CharField(max_length=120)
     summary = models.CharField(max_length=254)
 
+    def __str__(self):
+        return self.dept_id
+
 
 class Person(models.Model):
     """User scheme, extended from django User
@@ -24,21 +27,34 @@ class Person(models.Model):
     employee_id = models.IntegerField()
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
+    # Django will display the __str__() (__unicode__() on Python 2) of the related object.
+    def __str__(self):
+        return self.user.username
+
 
 class ProjectGrp(models.Model):
     grp_id = models.CharField(max_length=120, primary_key=True)
     summary = models.CharField(max_length=254)
     person = models.ForeignKey(Person, on_delete=models.CASCADE, name='owner')
 
+    def __str__(self):
+        return self.grp_id
+
 
 class ProjectType(models.Model):
     typename = models.CharField(max_length=50, primary_key=True)
     summary = models.CharField(max_length=254)
 
+    def __str__(self):
+        return self.typename
+
 
 class NoWorkingDay(models.Model):
     date = models.DateField(primary_key=True)
     summary = models.CharField(max_length=254)
+
+    def __str__(self):
+        return self.date.isoformat()
 
 
 class Project(models.Model):
@@ -51,6 +67,9 @@ class Project(models.Model):
     projectgrp = models.ForeignKey(ProjectGrp, on_delete=models.CASCADE, null=True)
     projecttype = models.ForeignKey(ProjectType, on_delete=models.CASCADE, default='FA')
     members = models.ManyToManyField(Person, related_name='members')
+
+    def __str__(self):
+        return self.project_id
 
 
 class TaskTime(models.Model):
