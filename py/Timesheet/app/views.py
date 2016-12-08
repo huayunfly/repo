@@ -7,6 +7,7 @@
 from django.shortcuts import render
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
+from django.http import JsonResponse
 from datetime import datetime
 from datetime import timedelta
 from app.models import TaskTime
@@ -310,8 +311,28 @@ def timeline(request, year, month, week=0):
 def report(request):
     """Generate the report."""
     assert isinstance(request, HttpRequest)
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('/')
+
     if request.method == 'POST':
         pass
+    elif request.is_ajax():
+        qs = parse_qs(urlparse(request.get_raw_uri()).query)
+        project_id_l = qs.get(REPORT_Q_PROJECT)
+        date_begin_l = qs.get(REPORT_Q_DATE_BEGIN)
+        date_end_l = qs.get(REPORT_Q_DATE_END)
+
+        if (project_id_l is not None) and (date_begin_l is not None) and (date_end_l is not None):
+            project_id = project_id_l[0]
+            date_begin = datetime.strptime(date_begin_l[0], REPORT_DATE_FORMAT)
+            date_end = datetime.strptime(date_end_l[0], REPORT_DATE_FORMAT)
+            tasks = TaskTime.objects.filter(project__project_id=project_id,
+                                            workday__gte=date_begin,
+                                            workday__lt=date_end)
+        # In order to allow non-dict objects to be serialized set the safe parameter to False.
+        return JsonResponse({'data': [(task.employee.user.username,
+                            task.workday.strftime(REPORT_DATE_FORMAT), task.t_hours) for task in tasks]})
+
     else:
         today = datetime.today()
         month_start = datetime(today.year, today.month, 1)
@@ -336,10 +357,11 @@ def report(request):
             project_id = project_id_l[0]
             date_begin = datetime.strptime(date_begin_l[0], REPORT_DATE_FORMAT)
             date_end = datetime.strptime(date_end_l[0], REPORT_DATE_FORMAT)
-
-        tasks = TaskTime.objects.filter(project__project_id=project_id,
+            tasks = TaskTime.objects.filter(project__project_id=project_id,
                                         workday__gte=date_begin,
                                         workday__lt=date_end)
+        else:
+            tasks = None
 
         return render(
             request,
