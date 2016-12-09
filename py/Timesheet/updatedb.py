@@ -44,13 +44,13 @@ if __name__ == "__main__":
 
     # engineering = Department.objects.get(dept_id='600800')
 
-    person1 = Person(user=yun_hua, employee_id=149, privilege=1, department=engineering)
+    person1 = Person(user=yun_hua, employee_id=149, privilege=1, department=engineering, display_name='花云')
     person1.save()
-    person2 = Person(user=yonghua_xu, employee_id=61, privilege=1, department=engineering)
+    person2 = Person(user=yonghua_xu, employee_id=61, privilege=1, department=engineering, display_name='徐勇华')
     person2.save()
-    person3 = Person(user=yinye_fan, employee_id=99, privilege=1, department=engineering)
+    person3 = Person(user=yinye_fan, employee_id=99, privilege=1, department=engineering, display_name='范寅烨')
     person3.save()
-    person_admin = Person(user=admin, employee_id=0, privilege=1, department=engineering)
+    person_admin = Person(user=admin, employee_id=0, privilege=1, department=engineering, display_name='Admin')
     person_admin.save()
 
     type1 = ProjectType(typename='FA', summary='客户项目')
