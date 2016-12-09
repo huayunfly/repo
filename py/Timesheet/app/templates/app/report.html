@@ -3,7 +3,7 @@
 {% block content %}
 
     <h2>{{ title }}</h2>
-    <h3>{{ message }}</h3>
+    <h3 id="project_id_title">{{ message }}</h3>
 
     <div class="row">
         <div class="col-sm-9">
@@ -11,15 +11,15 @@
                 <thead>
                 <tr>
                     <th scope="col" class="sortable column-project_id">
-                        <div class="text"><a href="?o=1">用户</a></div>
+                        <div class="text">用户</div>
                     </th>
 
                     <th scope="col" class="sortable column-summary">
-                        <div class="text"><a href="?o=2">日期</a></div>
+                        <div class="text">日期</div>
                     </th>
 
                     <th scope="col" class="sortable column-doclink">
-                        <div class="text"><a href="?o=3">工时</a></div>
+                        <div class="text">工时</div>
                     </th>
                 </tr>
                 </thead>
@@ -91,6 +91,11 @@
 
                 })
             });
+
+            $("#project_id_sel").change(function () {
+                $("#project_id_title").text($(this).val());
+            });
+
         });
 
     </script>
