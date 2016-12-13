@@ -18,7 +18,7 @@ from app.admin import admin_site
 
 urlpatterns = [
     # Examples:
-    url(r'^$', app.views.home, name='home'),
+    #url(r'^$', app.views.home, name='home'),
     url(r'^start/$', app.views.start, name='start'),
     url(r'^contact/$', app.views.contact, name='contact'),
     url(r'^about/$', app.views.about, name='about'),
@@ -48,6 +48,19 @@ urlpatterns = [
             }
         },
         name='login'),
+    url(r'^$',
+        django.contrib.auth.views.login,
+        {
+            'template_name': 'app/index.html',
+            'authentication_form': app.forms.BootstrapAuthenticationForm,
+            'extra_context':
+                {
+                    'title': 'Home',
+                    'year': datetime.now().year,
+                    'currentweek': the_week_url(),
+                }
+        },
+        name='home'),
     url(r'^logout$',
         django.contrib.auth.views.logout,
         {
