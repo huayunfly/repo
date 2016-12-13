@@ -83,8 +83,8 @@ def about(request):
         request,
         'app/about.html',
         {
-            'title': 'Timesheet web 0.1',
-            'message': 'IT service ext.5831',
+            'title': 'Timesheet v0.1',
+            'message': 'Yashentech Corporation',
             'mail': 'yun_hua@yashentech.com',
             'year': datetime.now().year,
         }
