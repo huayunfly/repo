@@ -12,6 +12,10 @@ function editrow(event) {
         event.preventDefault();
         deleteRow(this);
     }
+    else if (event.ctrlKey && 78 == event.which) {
+        event.preventDefault();
+        newRow();
+    }
 }
 
 function dragrow(md) {
@@ -134,8 +138,15 @@ function deleteRow(obj) {
     rename();
 }
 
-function newRow(obj) {
-
+function newRow() {
+    var $rows = $("table tbody tr");
+    $rows.last().after($rows.first().clone());
+    // $rows query will not be updated automatically. So $rows.last().next() is used.
+    $rows.last().next().find("input[name$='percentageInput']").val("0%");
+    addMask();
+    addContextMenu();
+    bindValidate();
+    rename();
 }
 
 function rename() {
@@ -224,17 +235,14 @@ function setProgress(progress_id, percent, suffix) {
 // Convert the week day name to another. For example: Mon -> 周一
 // @param day_name: the original weekday name.
 // @return converted name, 周一 e.g. If there is no match, return empty a string ''.
-function convertWeekdayName(day_name)
-{
+function convertWeekdayName(day_name) {
     var day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    var converted = ['周一','周二','周三','周四','周五','周六','周日'];
+    var converted = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
     var index = getArrayIndex(day_names, day_name);
-    if (index >= 0)
-    {
+    if (index >= 0) {
         return converted[index];
     }
-    else
-    {
+    else {
         return '';
     }
 }
@@ -314,6 +322,9 @@ $(document).ready(function () {
     $("table tbody tr").on("keydown", editrow);
     $("#targettest").click(function () {
         validate();
+    });
+    $("#btn_new_row").click(function () {
+        newRow();
     });
     addMask();
     addContextMenu();
