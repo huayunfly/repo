@@ -112,16 +112,16 @@ function copyRow(obj) {
         $temp = $("<form class='form-horizontal span6' id='clipboard'></form>").append($(obj).clone());
         $temp.hide();
         $("body").append($temp);
-        alert("append");
+        //alert("append");
     }
     else {
         $("body #clipboard").html("<tr>" + $(obj).html() + "</tr>");
-        alert("replace");
+        //alert("replace");
     }
 }
 
 function pasteRow(obj) {
-    alert($("body #clipboard").clone().html());
+    //alert($("body #clipboard").clone().html());
     $(obj).after($("body #clipboard").clone().html());
     $(obj).next().on("keydown", editrow);
     addMask();
@@ -168,17 +168,20 @@ function rename() {
 // We check the user input digital number as the task time.
 // Under any given day, the tasks total time can not be larger than 1.0. When the validation
 // is failed, the input box border will be highlighted using Bootstrap.
+// @return has_error: true or false.
 function validate() {
     var days = [];
     var times = [];
     var DELIMITER = '_';
+    var has_error = false;
+    clearProgress();
     $("table tbody tr").each(function (index) {
         var $day = $("td select[name$='daySel']");
         var $tasktime = $("td input[name$='percentageInput']");
         var day = $(this).find($day).val();
         // Strip '%' in the tasktime if it has some.
         var tasktime = String($(this).find($tasktime).val()).replace(/%/, "");
-        var has_error = false;
+        //var has_error = false;
         var val;
         if (!isInteger(tasktime)) {
             has_error = true;
@@ -219,6 +222,7 @@ function validate() {
             $(this).find($tasktime).parent().attr("class", null);
         }
     });
+    return has_error;
 }
 
 // Set the progress bar element content
@@ -230,6 +234,14 @@ function setProgress(progress_id, percent, suffix) {
     $progress.find(".progress-bar").attr("aria-valuenow", percent);
     $progress.find(".progress-bar").attr("style", "width:" + percent + "%;");
     $progress.find(".progress-bar span").text(percent + '%' + suffix);
+}
+
+// Clear all progress bars to zero.
+function clearProgress() {
+    var $progress_bar = $(".progress-bar");
+    $progress_bar.attr("aria-valuenow", 0);
+    $progress_bar.attr("style", "width:0%;");
+    $progress_bar.find("span").text("0%");
 }
 
 // Convert the week day name to another. For example: Mon -> 周一
@@ -326,6 +338,16 @@ $(document).ready(function () {
     $("#btn_new_row").click(function () {
         newRow();
     });
+    $("form").submit(function (event) {
+        if (!validate()) {
+            return;
+        }
+
+        $("#validate_msg").text("保存失败: 单日工时合计应不超过100%.").show().fadeOut(5000);
+        event.preventDefault();
+    });
+
+
     addMask();
     addContextMenu();
     bindValidate();
