@@ -64,7 +64,7 @@ if __name__ == "__main__":
     type5 = ProjectType(typename='Other', summary='其他')
     type5.save()
 
-    grp1 = ProjectGrp(grp_id='10000', summary='公司项目集', owner=person_admin)
+    grp1 = ProjectGrp(grp_id='10000', summary='项目集管理', owner=person_admin)
     grp1.save()
 
     project1 = Project(project_id='9G90401',
