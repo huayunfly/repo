@@ -257,11 +257,11 @@ def timeline(request, year, month, week=0):
             week_tasks.delete()
             return HttpResponseRedirect('/thanks/')
     else:
-        weekdays = [monday]
+        weekdays = []
         no_working_q = NoWorkingDay.objects.filter(date__lte=sunday,
                                                  date__gte=monday)
         no_working_days = [item.date for item in no_working_q]
-        for day in range(1, WEEK_DAYS_NUM, 1):
+        for day in range(0, WEEK_DAYS_NUM, 1):
             nextday = monday + timedelta(days=day)
             if nextday not in no_working_days:
                 weekdays.append(nextday)
