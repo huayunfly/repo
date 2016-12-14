@@ -5,7 +5,7 @@ Command-line utility for administrative tasks.
 """
 
 import os
-from datetime import date
+from datetime import datetime
 import django
 from xml.dom.minidom import parse
 
@@ -86,5 +86,20 @@ if __name__ == "__main__":
                           members=[],
                           completed=False)
         project.save()
+
+    # Project group
+    grp1 = ProjectGrp(grp_id='10000', summary='项目集管理',
+                      owner=Person.objects.filter(user__username='youqi_wang')[0])
+    grp1.save()
+
+    # Noworkingdays
+    dom = parse('./app/dbdata/timesheet_noworkingdays.xml')
+    assert dom.documentElement.tagName == "noworkingdays"
+    elements = dom.documentElement.getElementsByTagName("day")
+    for element in elements:
+        day = datetime.strptime(element.getAttribute('date'), '%Y-%m-%d')
+        summary = element.getAttribute('summary')
+        holiday = NoWorkingDay(date=day, summary=summary)
+        holiday.save()
 
     print 'Database creation successful'
