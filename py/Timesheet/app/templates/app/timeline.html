@@ -71,7 +71,7 @@
                             <select class="form-control" id="{{ dayID | lookup:forloop.counter0 }}"
                                     name={{ dayName | lookup:forloop.counter0 }}>
                                 {% for day in weekdays %}
-                                    {% if day.date == task.workday %}
+                                    {% if day == task.workday %}
                                         <option selected>{{ day | date:"D, M j" | localize }}</option>
                                     {% else %}
                                         <option>{{ day | date:"D, M j" }}</option>
@@ -141,9 +141,9 @@
             </table>
             <div id="context-menu">
                 <ul class="dropdown-menu" role="menu">
-                    <li><a tabindex="0">复制(Ctrl+C)</a></li>
-                    <li><a tabindex="1">粘贴(Ctrl+V)</a></li>
-                    <li><a tabindex="2">删除(Ctrl+D)</a></li>
+                    <li><a tabindex="0">复制行(Ctrl+C)</a></li>
+                    <li><a tabindex="1">粘贴行(Ctrl+V)</a></li>
+                    <li><a tabindex="2">删除行(Ctrl+D)</a></li>
                     <li class="divider"></li>
                     <li><a tabindex="3">添加新行(Ctrl+N)</a></li>
                 </ul>
@@ -153,9 +153,7 @@
                     <input type="submit" value="保存" class="btn btn-default"/>
                 </div>
             </div>
-            <div id="targettest">
-                Validate form here
-            </div>
+            <span id="validate_msg" style="color:red;"></span>
         </form>
     </div>
 {% endblock %}
