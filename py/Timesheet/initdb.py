@@ -5,7 +5,7 @@ Command-line utility for administrative tasks.
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, date
 import django
 from xml.dom.minidom import parse
 
@@ -25,7 +25,8 @@ if __name__ == "__main__":
 
     from django.contrib.auth.models import User
     from django.contrib.auth.hashers import make_password
-    from app.models import Department, Person, Project, ProjectGrp, TaskTime, ProjectType, NoWorkingDay
+    from app.models import Department, Person, Project, ProjectGrp, \
+        TaskTime, ProjectType, NoWorkingDay, FrozenDateRange
 
     # Types
     types = {}
@@ -101,5 +102,10 @@ if __name__ == "__main__":
         summary = element.getAttribute('summary')
         holiday = NoWorkingDay(date=day, summary=summary)
         holiday.save()
+
+    # Frozen range
+    frozen_range = FrozenDateRange(update_gte=date(1970, 1, 1),
+                                   update_lt=date(2016, 11, 1), summary='冻结修改期限')
+    frozen_range.save()
 
     print 'Database creation successful'

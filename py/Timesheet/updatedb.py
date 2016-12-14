@@ -23,7 +23,8 @@ if __name__ == "__main__":
 
     from django.contrib.auth.models import User
     from django.contrib.auth.hashers import make_password
-    from app.models import Department, Person, Project, ProjectGrp, TaskTime, ProjectType, NoWorkingDay
+    from app.models import Department, Person, Project, ProjectGrp, \
+        TaskTime, ProjectType, NoWorkingDay, FrozenDateRange
 
     # using unicode as the password coding
     yun_hua = User(username='yun_hua', email='yun_hua@yashentech.com', password=make_password('hello'))
@@ -105,5 +106,9 @@ if __name__ == "__main__":
     holiday3.save()
     holiday4 = NoWorkingDay(date=date(year=2016, month=12, day=11), summary='Weekend')
     holiday4.save()
+
+    frozen_range = FrozenDateRange(update_gte=date(1970, 1, 1),
+                                   update_lt=date(2016, 11, 1), summary='冻结修改期限')
+    frozen_range.save()
 
     print 'Database creation successful'

@@ -100,5 +100,11 @@ class TaskTime(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
 
+class FrozenDateRange(models.Model):
+    update_lt = models.DateField()
+    update_gte = models.DateField()
+    summary = models.CharField(max_length=254)
+
+
 
 

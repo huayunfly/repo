@@ -10,6 +10,7 @@ from .models import Department
 from .models import ProjectType
 from .models import NoWorkingDay
 from .models import ProjectGrp
+from .models import FrozenDateRange
 
 
 class MyAdminSite(AdminSite):
@@ -48,6 +49,14 @@ class NoWorkingDayAdmin(admin.ModelAdmin):
 @admin.register(ProjectGrp, site=admin_site)
 class ProjectGrpAdmin(admin.ModelAdmin):
     list_display = ('grp_id', 'summary', 'owner')
+
+
+@admin.register(FrozenDateRange, site=admin_site)
+class FrozenDateRangeAdmin(admin.ModelAdmin):
+    list_display = ('update_lt', 'update_gte', 'summary')
+
+
+
 
 
 

@@ -10,10 +10,11 @@ from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from datetime import datetime
 from datetime import timedelta
-from app.models import TaskTime
-from app.models import Project
-from app.models import Person
-from app.models import NoWorkingDay
+from .models import TaskTime
+from .models import Project
+from .models import Person
+from .models import NoWorkingDay
+from .models import FrozenDateRange
 import utils.timekit
 from utils.urls import the_week_url
 from urlparse import urlparse, parse_qs
@@ -220,6 +221,12 @@ def timeline(request, year, month, week=0):
     sunday = monday + timedelta(days=WEEK_DAYS_NUM - 1)
 
     if request.method == 'POST':
+        if FrozenDateRange.objects.count() > 0:
+            frozen_date_lt = FrozenDateRange.objects.first().update_lt
+            delta = frozen_date_lt - sunday
+            if delta.days > 0:
+                return HttpResponseRedirect('/error/')
+
         result = validate_task(request)
         if result[0]:
             return HttpResponseRedirect('/error/')
