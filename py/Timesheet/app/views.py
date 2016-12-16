@@ -275,7 +275,7 @@ def timeline(request, year, month, week=0):
 
         tasks = TaskTime.objects.filter(employee__user__username=request.user.username,
                                         workday__gte=weekdays[0],
-                                        workday__lte=weekdays[-1])
+                                        workday__lte=weekdays[-1]).order_by('workday')
 
         nextweek = utils.timekit.nextweek(int(year), int(month), int(week))
         lastweek = utils.timekit.lastweek(int(year), int(month), int(week))
