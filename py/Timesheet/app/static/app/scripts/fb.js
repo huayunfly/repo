@@ -107,22 +107,37 @@ function dragrow(md) {
 }
 
 function copyRow(obj) {
-    var $temp;
-    if (0 == $("body #clipboard").length) {
-        $temp = $("<form class='form-horizontal span6' id='clipboard'></form>").append($(obj).clone());
+    var $src = obj;
+    var $cloned = $src.clone();
+    $cloned.find("td select[name$='daySel']").get(0).selectedIndex =
+        $src.find("td select[name$='daySel']").get(0).selectedIndex;
+    $cloned.find("td select[name$='projectSel']").get(0).selectedIndex =
+        $src.find("td select[name$='projectSel']").get(0).selectedIndex;
+
+    var $clipboard = $("body #clipboard");
+    if (0 == $clipboard.length) {
+        var $temp;
+        $temp = $("<form class='form-horizontal span6' id='clipboard'></form>").append($cloned);
         $temp.hide();
         $("body").append($temp);
         //alert("append");
     }
     else {
-        $("body #clipboard").html("<tr>" + $(obj).html() + "</tr>");
+        $clipboard.empty();
+        $clipboard.append($cloned);
         //alert("replace");
     }
 }
 
 function pasteRow(obj) {
-    //alert($("body #clipboard").clone().html());
-    $(obj).after($("body #clipboard").clone().html());
+    var $src = $("body #clipboard").children().first();
+    var $cloned = $src.clone();
+    $cloned.find("td select[name$='daySel']").get(0).selectedIndex =
+        $src.find("td select[name$='daySel']").get(0).selectedIndex;
+    $cloned.find("td select[name$='projectSel']").get(0).selectedIndex =
+        $src.find("td select[name$='projectSel']").get(0).selectedIndex;
+
+    $(obj).after($cloned);
     $(obj).next().on("keydown", editrow);
     addMask();
     addContextMenu();
@@ -140,7 +155,14 @@ function deleteRow(obj) {
 
 function newRow() {
     var $rows = $("table tbody tr");
-    $rows.last().after($rows.first().clone());
+    var $src = $rows.first();
+    var $cloned = $src.clone();
+    $cloned.find("td select[name$='daySel']").get(0).selectedIndex =
+        $src.find("td select[name$='daySel']").get(0).selectedIndex;
+    $cloned.find("td select[name$='projectSel']").get(0).selectedIndex =
+        $src.find("td select[name$='projectSel']").get(0).selectedIndex;
+
+    $rows.last().after($cloned);
     // $rows query will not be updated automatically. So $rows.last().next() is used.
     $rows.last().next().find("input[name$='percentageInput']").val("0%");
     addMask();
@@ -332,9 +354,7 @@ function addContextMenu() {
 
 $(document).ready(function () {
     $("table tbody tr").on("keydown", editrow);
-    $("#targettest").click(function () {
-        validate();
-    });
+
     $("#btn_new_row").click(function () {
         newRow();
     });
