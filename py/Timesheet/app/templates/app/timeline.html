@@ -32,19 +32,26 @@
     {% for day in weekdays %}
         <div class="progress progress-striped col-sm-1 col-sm-push-0" id="{{ day | date:"D_M_j" }}" style="padding-left:
              0px;padding-right: 0px;">
-        {% comment %}
+            {% comment %}
     'sr-only' class is used to hide information intended only for screen readers from the layout
     of the rendered page.
     {% endcomment %}
-        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="50"
-             aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
-            <span >0% 完成</span>
-        </div>
+            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="50"
+                 aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                <span>0% 完成</span>
+            </div>
         </div>
     {% endfor %}
 
     <div class="col-sm-1">
         <button type="button" class="btn btn-primary btn-sm" id="btn_new_row">+新行</button>
+    </div>
+    <div class="col-sm-1">
+    <a href="/output/?date__gte={{ month_start }}&date__lt={{ next_month_start }}&output_type=csv">
+        <button type="button" class="btn btn-primary btn-sm" id="btn_month_output"
+                q="date__gte={{ month_start }}&date__lt={{ next_month_start }}&output_type=csv">导出月工时
+        </button>
+    </a>
     </div>
 
 
