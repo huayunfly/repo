@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^thanks/$', app.views.thanks, name='thanks'),
     url(r'^error/$', app.views.error, name='error'),
     url(r'^report/', app.views.report, name='report'),
+    url(r'^output/', app.views.output, name='output'),
     url(r'^admin/', admin_site.urls), # NO '^admin/$' for the pattern [u'admin/$(?P<app_label>app)/$']
     url(r'^timeline/(?P<year>[0-9]{4})/(?P<month>[0-9]{2})/(?P<week>[0-6]{1})/$', app.views.timeline, name='timeline'),
 
