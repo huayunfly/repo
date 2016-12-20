@@ -6,6 +6,7 @@
 """
 from django.shortcuts import render
 from django.http import HttpRequest
+from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from datetime import datetime
@@ -18,6 +19,9 @@ from .models import FrozenDateRange
 import utils.timekit
 from utils.urls import the_week_url
 from urlparse import urlparse, parse_qs
+from utils.unicodecsv import UnicodeWriter
+
+import csv
 
 WEEK_DAYS_NUM = 7
 DAY_WORKING_HOURS = 8.0
@@ -33,12 +37,16 @@ PLACEHOLD_TASKTIME_NUM = 5
 
 FORM_DATE_FORMAT = '%Y %a, %b %d'
 WEEK_LINK_FORMAT = '/timeline/%d/%02d/%d/'
-REPORT_DATE_FORMAT ='%Y-%m-%d'
+REPORT_DATE_FORMAT = '%Y-%m-%d'
+OUTPUT_DATE_FORMAT = '%d-%02d-%02d'
 DELIMITER = '_'
 
 REPORT_Q_PROJECT = 'project_id'
 REPORT_Q_DATE_BEGIN = 'date__gte'
 REPORT_Q_DATE_END = 'date__lt'
+REPORT_Q_FORMAT = 'output_type'
+
+REPORT_CSV_TYPE = 'csv'
 
 
 def home(request):
@@ -277,9 +285,17 @@ def timeline(request, year, month, week=0):
                                         workday__gte=weekdays[0],
                                         workday__lte=weekdays[-1]).order_by('workday')
 
+        # For week links
         nextweek = utils.timekit.nextweek(int(year), int(month), int(week))
         lastweek = utils.timekit.lastweek(int(year), int(month), int(week))
         theweek = utils.timekit.currentweek()
+
+        # For output query
+        month_start = OUTPUT_DATE_FORMAT % (int(year), int(month), 1)
+        if int(month) + 1 > 12:
+            next_month_start = OUTPUT_DATE_FORMAT % (int(year) + 1, 1, 1)
+        else:
+            next_month_start = OUTPUT_DATE_FORMAT % (int(year), int(month) + 1, 1)
 
         # If there is no task, then we create empty tasks in the browser.
         task_num = len(tasks)
@@ -311,6 +327,8 @@ def timeline(request, year, month, week=0):
                 'dayName': create_names(task_num, DAY_ELEMENT_NAME, ELEMENT_SURNAME),
                 'timeName': create_names(task_num, TASKTIME_ELEMENT_NAME, ELEMENT_SURNAME),
                 'emptyTasks': range(empty_task_num),
+                'month_start': month_start,
+                'next_month_start': next_month_start,
             }
         )
 
@@ -386,3 +404,41 @@ def report(request):
                 'tasks': tasks,
             }
         )
+
+
+def output(request):
+    """Generate the output."""
+    assert isinstance(request, HttpRequest)
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('/')
+
+    if request.is_ajax() or request.method == 'GET':
+        qs = parse_qs(urlparse(request.get_raw_uri()).query)
+        date_begin_l = qs.get(REPORT_Q_DATE_BEGIN)
+        date_end_l = qs.get(REPORT_Q_DATE_END)
+        fmt_l = qs.get(REPORT_Q_FORMAT)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="%s.csv"' % request.user.username
+
+        tasks = []
+        if (date_begin_l is not None) and (date_end_l is not None) and (fmt_l is not None):
+            fmt = fmt_l[0]
+            if fmt == REPORT_CSV_TYPE:
+                date_begin = datetime.strptime(date_begin_l[0], REPORT_DATE_FORMAT)
+                date_end = datetime.strptime(date_end_l[0], REPORT_DATE_FORMAT)
+                tasks = TaskTime.objects.filter(employee__user=request.user,
+                                                workday__gte=date_begin,
+                                                workday__lt=date_end).order_by('workday')
+
+        writer = UnicodeWriter(response)
+        line = ['', '', '', '']
+        for task in tasks:
+            line[0] = request.user.username
+            line[1] = task.workday.strftime(REPORT_DATE_FORMAT)
+            line[2] = task.project.project_id
+            line[3] = '%0.2f' % task.t_percentage
+            writer.writerow(line)
+        return response
+    else:
+        return HttpResponseRedirect('/')
