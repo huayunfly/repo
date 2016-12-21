@@ -21,8 +21,6 @@ from utils.urls import the_week_url
 from urlparse import urlparse, parse_qs
 from utils.unicodecsv import UnicodeWriter
 
-import csv
-
 WEEK_DAYS_NUM = 7
 DAY_WORKING_HOURS = 8.0
 
@@ -274,7 +272,7 @@ def timeline(request, year, month, week=0):
     else:
         weekdays = []
         no_working_q = NoWorkingDay.objects.filter(date__lte=sunday,
-                                                 date__gte=monday)
+                                                   date__gte=monday)
         no_working_days = [item.date for item in no_working_q]
         for day in range(0, WEEK_DAYS_NUM, 1):
             nextday = monday + timedelta(days=day)
@@ -356,7 +354,7 @@ def report(request):
                                             workday__lt=date_end)
         # In order to allow non-dict objects to be serialized set the safe parameter to False.
         return JsonResponse({'data': [(task.employee.user.username,
-                            task.workday.strftime(REPORT_DATE_FORMAT), task.t_hours) for task in tasks]})
+                                       task.workday.strftime(REPORT_DATE_FORMAT), task.t_hours) for task in tasks]})
 
     else:
         today = datetime.today()
@@ -383,8 +381,8 @@ def report(request):
             date_begin = datetime.strptime(date_begin_l[0], REPORT_DATE_FORMAT)
             date_end = datetime.strptime(date_end_l[0], REPORT_DATE_FORMAT)
             tasks = TaskTime.objects.filter(project__project_id=project_id,
-                                        workday__gte=date_begin,
-                                        workday__lt=date_end)
+                                            workday__gte=date_begin,
+                                            workday__lt=date_end)
         else:
             tasks = None
 
@@ -419,7 +417,8 @@ def output(request):
         fmt_l = qs.get(REPORT_Q_FORMAT)
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="%s.csv"' % request.user.username
+        response['Content-Disposition'] = \
+            'attachment; filename="%s_%s.csv"' % (request.user.username, date_begin_l[0])
 
         tasks = []
         if (date_begin_l is not None) and (date_end_l is not None) and (fmt_l is not None):
@@ -431,14 +430,16 @@ def output(request):
                                                 workday__gte=date_begin,
                                                 workday__lt=date_end).order_by('workday')
 
-        writer = UnicodeWriter(response)
-        line = ['', '', '', '']
-        for task in tasks:
-            line[0] = request.user.username
-            line[1] = task.workday.strftime(REPORT_DATE_FORMAT)
-            line[2] = task.project.project_id
-            line[3] = '%0.2f' % task.t_percentage
-            writer.writerow(line)
+        if request.user.person:
+            writer = UnicodeWriter(response)
+            line = ['', '', '', '']
+            for task in tasks:
+                line[0] = request.user.person.display_name
+                line[1] = task.workday.strftime(REPORT_DATE_FORMAT)
+                line[2] = task.project.project_id
+                line[3] = '%0.2f' % task.t_percentage
+                writer.writerow(line)
+
         return response
     else:
         return HttpResponseRedirect('/')
