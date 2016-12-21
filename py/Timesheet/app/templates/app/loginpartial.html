@@ -1,17 +1,21 @@
 {% if user.is_authenticated %}
-<form id="logoutForm" action="/logout" method="post" class="navbar-right">
-    {% csrf_token %}
-    <ul class="nav navbar-nav navbar-right">
-        <li><span class="navbar-brand">你好 {{ user.username }}!</span></li>
-        <li><a href="javascript:document.getElementById('logoutForm').submit()">退出登录</a></li>
-    </ul>
+    <form id="logoutForm" action="/logout" method="post" class="navbar-right">
+        {% csrf_token %}
+        <ul class="nav navbar-nav navbar-right">
+            {% if user.person %}
+                <li><span class="navbar-brand">你好 {{ user.person.display_name }}!</span></li>
+            {% else %}
+                <li><span class="navbar-brand">你好 {{ user.username }}!</span></li>
+            {% endif %}
+            <li><a href="javascript:document.getElementById('logoutForm').submit()">退出登录</a></li>
+        </ul>
 
-</form>
+    </form>
 
 {% else %}
 
-<ul class="nav navbar-nav navbar-right">
-    <li><a href="{% url 'login' %}">登录</a></li>
-</ul>
+    <ul class="nav navbar-nav navbar-right">
+        <li><a href="{% url 'login' %}">登录</a></li>
+    </ul>
 
 {% endif %}
