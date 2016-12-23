@@ -14,7 +14,7 @@ from .models import FrozenDateRange
 
 
 class MyAdminSite(AdminSite):
-    site_header = 'Timesheet管理控制台'
+    site_header = '工时表管理控制台'
 
 
 admin_site = MyAdminSite(name='Admin Console')
