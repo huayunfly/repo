@@ -18,7 +18,6 @@ from .models import NoWorkingDay
 from .models import FrozenDateRange
 import utils.timekit
 from utils.urls import the_week_url
-from urlparse import urlparse, parse_qs
 from utils.unicodecsv import UnicodeWriter
 
 WEEK_DAYS_NUM = 7
@@ -316,7 +315,7 @@ def timeline(request, year, month, week=0):
                 'message': 'Hello',
                 'year': datetime.now().year,
                 'tasks': tasks,
-                'projects': Project.objects.all(),
+                'projects': Project.objects.all().order_by('project_id'),
                 'weekdays': weekdays,
                 'projectID': create_names(task_num, PROJECT_ELEMENT_NAME, ELEMENT_ID_SURNAME),
                 'dayID': create_names(task_num, DAY_ELEMENT_NAME, ELEMENT_ID_SURNAME),
@@ -340,20 +339,16 @@ def report(request):
     if request.method == 'POST':
         pass
     elif request.is_ajax():
-        qs = parse_qs(urlparse(request.get_raw_uri()).query)
-        project_id_l = qs.get(REPORT_Q_PROJECT)
-        date_begin_l = qs.get(REPORT_Q_DATE_BEGIN)
-        date_end_l = qs.get(REPORT_Q_DATE_END)
-
-        if (project_id_l is not None) and (date_begin_l is not None) and (date_end_l is not None):
-            project_id = project_id_l[0]
-            date_begin = datetime.strptime(date_begin_l[0], REPORT_DATE_FORMAT)
-            date_end = datetime.strptime(date_end_l[0], REPORT_DATE_FORMAT)
+        # Do NOT use urlparse(request.get_raw_uri()).query here, which causes bad encoding/decoding problem
+        project_id = request.GET.get(REPORT_Q_PROJECT)
+        date_begin = request.GET.get(REPORT_Q_DATE_BEGIN)
+        date_end = request.GET.get(REPORT_Q_DATE_END)
+        if (project_id is not None) and (date_begin is not None) and (date_end is not None):
             tasks = TaskTime.objects.filter(project__project_id=project_id,
                                             workday__gte=date_begin,
                                             workday__lt=date_end)
         # In order to allow non-dict objects to be serialized set the safe parameter to False.
-        return JsonResponse({'data': [(task.employee.user.username,
+        return JsonResponse({'data': [(task.employee.display_name,
                                        task.workday.strftime(REPORT_DATE_FORMAT), task.t_hours) for task in tasks]})
 
     else:
@@ -371,15 +366,10 @@ def report(request):
         year_start = datetime(today.year, 1, 1)
         next_year_start = datetime(today.year + 1, 1, 1)
 
-        qs = parse_qs(urlparse(request.get_raw_uri()).query)
-        project_id_l = qs.get(REPORT_Q_PROJECT)
-        date_begin_l = qs.get(REPORT_Q_DATE_BEGIN)
-        date_end_l = qs.get(REPORT_Q_DATE_END)
-
-        if (project_id_l is not None) and (date_begin_l is not None) and (date_end_l is not None):
-            project_id = project_id_l[0]
-            date_begin = datetime.strptime(date_begin_l[0], REPORT_DATE_FORMAT)
-            date_end = datetime.strptime(date_end_l[0], REPORT_DATE_FORMAT)
+        project_id = request.GET.get(REPORT_Q_PROJECT)
+        date_begin = request.GET.get(REPORT_Q_DATE_BEGIN)
+        date_end = request.GET.get(REPORT_Q_DATE_END)
+        if (project_id is not None) and (date_begin is not None) and (date_end is not None):
             tasks = TaskTime.objects.filter(project__project_id=project_id,
                                             workday__gte=date_begin,
                                             workday__lt=date_end)
@@ -393,7 +383,7 @@ def report(request):
                 'title': 'Report',
                 'message': 'Project related',
                 'year': datetime.now().year,
-                'projects': Project.objects.all(),
+                'projects': Project.objects.all().order_by('project_id'),
                 'month_start': month_start.strftime(REPORT_DATE_FORMAT),
                 'last_month_start': last_month_start.strftime(REPORT_DATE_FORMAT),
                 'next_month_start': next_month_start.strftime(REPORT_DATE_FORMAT),
@@ -410,7 +400,7 @@ def output(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('/')
 
-    if request.is_ajax() or request.method == 'GET':
+    if request.method == 'GET':
         qs = parse_qs(urlparse(request.get_raw_uri()).query)
         date_begin_l = qs.get(REPORT_Q_DATE_BEGIN)
         date_end_l = qs.get(REPORT_Q_DATE_END)
