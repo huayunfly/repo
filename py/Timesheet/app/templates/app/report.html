@@ -36,7 +36,7 @@
             </table>
         </div>
         <div class="col-sm-2 col-sm-offset-1" style="padding-top:0px;" id="changelist-filter">
-            <button type="button" class="btn btn-primary btn-lg">筛选器&raquo;</button>
+            <button type="button" id="btn_filter" class="btn btn-primary btn-lg">筛选&raquo;</button>
 
             <h3> 选项目 id </h3>
             <select class="form-control" id="project_id_sel">
@@ -46,6 +46,13 @@
             </select>
 
             <h3> 按日期 </h3>
+            <select class="form-control" id="period_sel">
+                <option q="date__gte={{ month_start }}&date__lt={{ next_month_start }}">本月</option>
+                <option q="date__gte={{ last_month_start }}&date__lt={{ month_start }}">上月</option>
+                <option q="date__gte={{ year_start }}&date__lt={{ next_year_start }}">今年</option>
+                <option q="?">全部时间</option>
+            </select>
+            <!--
             <ul class="list-group" id="period_list">
                 <li>
                     <a q="?">全部时间</a></li>
@@ -56,6 +63,7 @@
                 <li>
                     <a q="date__gte={{ year_start }}&date__lt={{ next_year_start }}">今年</a></li>
             </ul>
+         -->
 
         </div>
 
@@ -65,17 +73,20 @@
 {% block scripts %}
     <script type="text/javascript">
         $(document).ready(function () {
-            $("#period_list li").click(function () {
-                var q_sets = $(this).find("a").attr("q").split("&");
+            $("#btn_filter").click(function () {
+                var q_sets = $("#period_sel option:selected").attr("q").split("&");
                 var params = [];
                 for (var key in q_sets) {
                     var pair = q_sets[key].split("=");
                     params[pair[0]] = pair[1];
                 }
+                var project_id = $("#project_id_sel").val();
+
+
                 $.get("/report/", {
-                    'project_id': $("#project_id_sel").val(),
+                    'project_id': project_id,
                     'date__gte': params["date__gte"],
-                    'date__lt': params["date__lt"]
+                    'date__lt': params["date__lt"],
                 }, function (ret) {
                     var data = eval(ret.data)
 
@@ -88,14 +99,9 @@
                         content += "</tr>";
                     }
                     $("#result_list tbody").html(content);
-
+                    $("#project_id_title").text(project_id);
                 })
             });
-
-            $("#project_id_sel").change(function () {
-                $("#project_id_title").text($(this).val());
-            });
-
         });
 
     </script>
