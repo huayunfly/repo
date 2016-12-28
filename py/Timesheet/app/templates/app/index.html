@@ -60,5 +60,28 @@
 
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-4">
+            <h2>登录</h2>
+            <p>
+                公司内网使用,本地账号登录:名拼音_(下划线)姓拼音,如linlin_huang。
+            </p>
+            <p><a class="btn btn-default" href="/login">去登录 &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>填写工时</h2>
+            <p>以"周"为单位,选择"本周"、"上周"、"下周"等,默认"本周"。节假日不列入。</p>
+            <p>每日工时选择日期、项目号、填写"百分比",合计不超过100%。页面检查和提示工时进度。</p>
+            <p>工时行(鼠标右击菜单)支持"添加"、"复制"、"粘帖"、"删除"。</p>
+            <p>可以月为周期导出个人工时(.csv UTF8格式),使用Excel->数据->导入打开。</p>
+            <p><a class="btn btn-default" href="{% url 'start' %}">填工时 &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>报表</h2>
+            <p>选择项目号、时间周期,筛选某项目所有填报人员的综合工时。</p>
+            <p>以指定时间周期导出项目综合工时(.csv UTF8格式)。</p>
+            <p><a class="btn btn-default" href="/report">看报表 &raquo;</a></p>
+        </div>
+    </div>
 
 {% endblock %}
