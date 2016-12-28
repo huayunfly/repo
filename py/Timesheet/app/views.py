@@ -401,21 +401,19 @@ def output(request):
         return HttpResponseRedirect('/')
 
     if request.method == 'GET':
-        qs = parse_qs(urlparse(request.get_raw_uri()).query)
-        date_begin_l = qs.get(REPORT_Q_DATE_BEGIN)
-        date_end_l = qs.get(REPORT_Q_DATE_END)
-        fmt_l = qs.get(REPORT_Q_FORMAT)
+        date_begin = request.GET.get(REPORT_Q_DATE_BEGIN)
+        date_end = request.GET.get(REPORT_Q_DATE_END)
+        fmt = request.GET.get(REPORT_Q_FORMAT)
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = \
-            'attachment; filename="%s_%s.csv"' % (request.user.username, date_begin_l[0])
+            'attachment; filename="%s_%s.csv"' % (request.user.username, date_begin)
 
         tasks = []
-        if (date_begin_l is not None) and (date_end_l is not None) and (fmt_l is not None):
-            fmt = fmt_l[0]
+        if (date_begin is not None) and (date_end is not None) and (fmt is not None):
             if fmt == REPORT_CSV_TYPE:
-                date_begin = datetime.strptime(date_begin_l[0], REPORT_DATE_FORMAT)
-                date_end = datetime.strptime(date_end_l[0], REPORT_DATE_FORMAT)
+                date_begin = datetime.strptime(date_begin, REPORT_DATE_FORMAT)
+                date_end = datetime.strptime(date_end, REPORT_DATE_FORMAT)
                 tasks = TaskTime.objects.filter(employee__user=request.user,
                                                 workday__gte=date_begin,
                                                 workday__lt=date_end).order_by('workday')
