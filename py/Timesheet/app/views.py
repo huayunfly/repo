@@ -89,8 +89,8 @@ def about(request):
         request,
         'app/about.html',
         {
-            'title': 'Time 0.1',
-            'message': 'Yashentech Corporation',
+            'title': '工时表 (0.1)',
+            'message': '亚申科技',
             'mail': 'yun_hua@yashentech.com',
             'year': datetime.now().year,
         }
