@@ -36,7 +36,10 @@
             </table>
         </div>
         <div class="col-sm-2 col-sm-offset-1" style="padding-top:0px;" id="changelist-filter">
-            <button type="button" id="btn_filter" class="btn btn-primary btn-lg">筛选&raquo;</button>
+            <button type="button" id="btn_filter" class="btn btn-primary btn-lg">筛选</button>
+            <a id="a_project_output" href=".">
+                <button type="button" class="btn btn-primary btn-lg" id="btn_project_output">导出&raquo;</button>
+            </a>
 
             <h3> 选项目 id </h3>
             <select class="form-control" id="project_id_sel">
@@ -50,21 +53,7 @@
                 <option q="date__gte={{ month_start }}&date__lt={{ next_month_start }}">本月</option>
                 <option q="date__gte={{ last_month_start }}&date__lt={{ month_start }}">上月</option>
                 <option q="date__gte={{ year_start }}&date__lt={{ next_year_start }}">今年</option>
-                <option q="?">全部时间</option>
             </select>
-            <!--
-            <ul class="list-group" id="period_list">
-                <li>
-                    <a q="?">全部时间</a></li>
-                <li>
-                    <a q="date__gte={{ last_month_start }}&date__lt={{ month_start }}">上月</a></li>
-                <li>
-                    <a q="date__gte={{ month_start }}&date__lt={{ next_month_start }}">本月</a></li>
-                <li>
-                    <a q="date__gte={{ year_start }}&date__lt={{ next_year_start }}">今年</a></li>
-            </ul>
-         -->
-
         </div>
 
     </div>
@@ -72,21 +61,43 @@
 
 {% block scripts %}
     <script type="text/javascript">
+        function get_period() {
+            var q_sets = $("#period_sel option:selected").attr("q").split("&");
+            var params = [];
+            for (var key in q_sets) {
+                var pair = q_sets[key].split("=");
+                params[pair[0]] = pair[1];
+            }
+            return params
+        }
+
+        function set_project_output_params() {
+            var period = get_period();
+            var project_id = $("#project_id_sel").val();
+
+            var href = "/output/?";
+            href += "date__gte=";
+            href += period["date__gte"];
+            href += "&date__lt=";
+            href += period["date__lt"];
+            href += "&project_id=";
+            href += project_id;
+            href += "&output_type=csv&output_category=project";
+
+            $("#a_project_output").attr("href", href);
+        }
+
         $(document).ready(function () {
+            // Bind Ajax GET data
             $("#btn_filter").click(function () {
-                var q_sets = $("#period_sel option:selected").attr("q").split("&");
-                var params = [];
-                for (var key in q_sets) {
-                    var pair = q_sets[key].split("=");
-                    params[pair[0]] = pair[1];
-                }
+                var period = get_period();
                 var project_id = $("#project_id_sel").val();
 
 
                 $.get("/report/", {
                     'project_id': project_id,
-                    'date__gte': params["date__gte"],
-                    'date__lt': params["date__lt"],
+                    'date__gte': period["date__gte"],
+                    'date__lt': period["date__lt"],
                 }, function (ret) {
                     var data = eval(ret.data)
 
@@ -100,8 +111,20 @@
                     }
                     $("#result_list tbody").html(content);
                     $("#project_id_title").text(project_id);
-                })
+                });
             });
+
+            // Bind the selection change event
+            $("#period_sel").change(function () {
+                set_project_output_params();
+            });
+
+            $("#project_id_sel").change(function () {
+                set_project_output_params();
+            });
+
+            // Initialize the <a href> value
+            set_project_output_params();
         });
 
     </script>
