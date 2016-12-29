@@ -42,8 +42,11 @@ REPORT_Q_PROJECT = 'project_id'
 REPORT_Q_DATE_BEGIN = 'date__gte'
 REPORT_Q_DATE_END = 'date__lt'
 REPORT_Q_FORMAT = 'output_type'
+REPORT_Q_CATEGORY = 'output_category'
 
 REPORT_CSV_TYPE = 'csv'
+REPORT_CATEGORY_PROJECT = 'project'
+REPORT_CATEGORY_PERSON = 'person'
 
 
 def home(request):
@@ -404,29 +407,50 @@ def output(request):
         date_begin = request.GET.get(REPORT_Q_DATE_BEGIN)
         date_end = request.GET.get(REPORT_Q_DATE_END)
         fmt = request.GET.get(REPORT_Q_FORMAT)
-
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = \
-            'attachment; filename="%s_%s.csv"' % (request.user.username, date_begin)
+        project_id = request.GET.get(REPORT_Q_PROJECT)
+        output_category = request.GET.get(REPORT_Q_CATEGORY)
 
         tasks = []
-        if (date_begin is not None) and (date_end is not None) and (fmt is not None):
-            if fmt == REPORT_CSV_TYPE:
-                date_begin = datetime.strptime(date_begin, REPORT_DATE_FORMAT)
-                date_end = datetime.strptime(date_end, REPORT_DATE_FORMAT)
-                tasks = TaskTime.objects.filter(employee__user=request.user,
-                                                workday__gte=date_begin,
-                                                workday__lt=date_end).order_by('workday')
+        response = HttpResponse(content_type='text/csv')
 
-        if request.user.person:
-            writer = UnicodeWriter(response)
-            line = ['', '', '', '']
-            for task in tasks:
-                line[0] = request.user.person.display_name
-                line[1] = task.workday.strftime(REPORT_DATE_FORMAT)
-                line[2] = task.project.project_id
-                line[3] = '%0.2f' % task.t_percentage
-                writer.writerow(line)
+        if REPORT_CATEGORY_PERSON == output_category:
+            response['Content-Disposition'] = \
+                'attachment; filename="%s_%s.csv"' % (request.user.username, date_begin)
+
+            if (date_begin is not None) and (date_end is not None) and (fmt is not None):
+                if fmt == REPORT_CSV_TYPE:
+                    date_begin = datetime.strptime(date_begin, REPORT_DATE_FORMAT)
+                    date_end = datetime.strptime(date_end, REPORT_DATE_FORMAT)
+                    tasks = TaskTime.objects.filter(employee__user=request.user,
+                                                    workday__gte=date_begin,
+                                                    workday__lt=date_end).order_by('workday')
+            if request.user.person:
+                writer = UnicodeWriter(response)
+                line = ['', '', '', '']
+                for task in tasks:
+                    line[0] = request.user.person.display_name
+                    line[1] = task.workday.strftime(REPORT_DATE_FORMAT)
+                    line[2] = task.project.project_id
+                    line[3] = '%0.2f' % task.t_percentage
+                    writer.writerow(line)
+
+        elif REPORT_CATEGORY_PROJECT == output_category:
+            response['Content-Disposition'] = \
+                'attachment; filename="%s_%s.csv"' % (project_id, date_begin)
+
+            if (project_id is not None) and (date_begin is not None) and (date_end is not None):
+                tasks = TaskTime.objects.filter(project__project_id=project_id,
+                                                workday__gte=date_begin,
+                                                workday__lt=date_end)
+                writer = UnicodeWriter(response)
+                # Project title
+                writer.writerow([project_id])
+                # Project related task times
+                for task in tasks:
+                    writer.writerow([task.employee.display_name,
+                                     task.workday.strftime(REPORT_DATE_FORMAT), '%0.1f' % task.t_hours])
+        else:
+            response['Content-Disposition'] = 'attachment; filename="empty.csv"'
 
         return response
     else:
