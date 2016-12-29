@@ -47,11 +47,11 @@
         <button type="button" class="btn btn-primary btn-sm" id="btn_new_row">+新行</button>
     </div>
     <div class="col-sm-1">
-    <a href="/output/?date__gte={{ month_start }}&date__lt={{ next_month_start }}&output_type=csv">
-        <button type="button" class="btn btn-primary btn-sm" id="btn_month_output"
-                q="date__gte={{ month_start }}&date__lt={{ next_month_start }}&output_type=csv">导出月工时
-        </button>
-    </a>
+        <a href="/output/?date__gte={{ month_start }}&date__lt={{ next_month_start }}&output_type=csv&output_category=person">
+            <button type="button" class="btn btn-primary btn-sm" id="btn_month_output"
+                    q="date__gte={{ month_start }}&date__lt={{ next_month_start }}&output_type=csv">导出月工时
+            </button>
+        </a>
     </div>
 
 
