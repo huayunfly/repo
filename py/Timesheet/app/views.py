@@ -9,6 +9,7 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
+from django.db.models import Sum
 from datetime import datetime
 from datetime import timedelta
 from .models import TaskTime
@@ -47,6 +48,8 @@ REPORT_Q_CATEGORY = 'output_category'
 REPORT_CSV_TYPE = 'csv'
 REPORT_CATEGORY_PROJECT = 'project'
 REPORT_CATEGORY_PERSON = 'person'
+
+PROJECT_ID_ALL = 'ALL'
 
 
 def home(request):
@@ -346,13 +349,23 @@ def report(request):
         project_id = request.GET.get(REPORT_Q_PROJECT)
         date_begin = request.GET.get(REPORT_Q_DATE_BEGIN)
         date_end = request.GET.get(REPORT_Q_DATE_END)
+        q_sets = []
         if (project_id is not None) and (date_begin is not None) and (date_end is not None):
-            tasks = TaskTime.objects.filter(project__project_id=project_id,
-                                            workday__gte=date_begin,
-                                            workday__lt=date_end)
+            if PROJECT_ID_ALL == project_id:
+                for person in Person.objects.all():
+                    total = TaskTime.objects.filter(
+                        employee=person, workday__gte=date_begin,
+                        workday__lt=date_end).aggregate(Sum('t_hours')).get('t_hours__sum')
+                    q_sets.append((person.display_name, '%s/%s' % (date_begin, date_end), total))
+
+            else:
+                tasks = TaskTime.objects.filter(project__project_id=project_id,
+                                                workday__gte=date_begin,
+                                                workday__lt=date_end)
+                q_sets = [(task.employee.display_name,
+                           task.workday.strftime(REPORT_DATE_FORMAT), task.t_hours) for task in tasks]
         # In order to allow non-dict objects to be serialized set the safe parameter to False.
-        return JsonResponse({'data': [(task.employee.display_name,
-                                       task.workday.strftime(REPORT_DATE_FORMAT), task.t_hours) for task in tasks]})
+        return JsonResponse({'data': q_sets})
 
     else:
         today = datetime.today()
@@ -426,29 +439,51 @@ def output(request):
                                                     workday__lt=date_end).order_by('workday')
             if request.user.person:
                 writer = UnicodeWriter(response)
-                line = ['', '', '', '']
+                writer.writerow(['Name', 'Date', 'Project', 'Task-per'])
                 for task in tasks:
-                    line[0] = request.user.person.display_name
-                    line[1] = task.workday.strftime(REPORT_DATE_FORMAT)
-                    line[2] = task.project.project_id
-                    line[3] = '%0.2f' % task.t_percentage
-                    writer.writerow(line)
+                    writer.writerow([request.user.person.display_name,
+                                     task.workday.strftime(REPORT_DATE_FORMAT),
+                                     task.project.project_id,
+                                     '%0.2f' % task.t_percentage])
 
         elif REPORT_CATEGORY_PROJECT == output_category:
             response['Content-Disposition'] = \
                 'attachment; filename="%s_%s.csv"' % (project_id, date_begin)
 
             if (project_id is not None) and (date_begin is not None) and (date_end is not None):
-                tasks = TaskTime.objects.filter(project__project_id=project_id,
-                                                workday__gte=date_begin,
-                                                workday__lt=date_end)
                 writer = UnicodeWriter(response)
-                # Project title
-                writer.writerow([project_id])
-                # Project related task times
-                for task in tasks:
-                    writer.writerow([task.employee.display_name,
-                                     task.workday.strftime(REPORT_DATE_FORMAT), '%0.1f' % task.t_hours])
+                writer.writerow(['Project', 'Name', 'Date', 'Task-time'])
+                if PROJECT_ID_ALL == project_id:
+                    tasks = TaskTime.objects.filter(workday__gte=date_begin,
+                                                    workday__lt=date_end).order_by('project_id')
+                    temp_id = ''
+                    count = 0.0
+                    for task in tasks:
+                        # Sum and output the count.
+                        if not temp_id:
+                            temp_id = task.project.project_id
+                            count = task.t_hours
+                        elif temp_id != task.project.project_id:
+                            writer.writerow(['*', '*', '*', '%0.1f' % count])
+                            temp_id = task.project.project_id
+                            count = task.t_hours
+                        else:
+                            count += task.t_hours
+                        # Go on
+                        writer.writerow([task.project.project_id, task.employee.display_name,
+                                         task.workday.strftime(REPORT_DATE_FORMAT), '%0.1f' % task.t_hours])
+                    # Last project count output.
+                    writer.writerow(['*', '*', '*', '%0.1f' % count])
+
+                else:
+                    tasks = TaskTime.objects.filter(project__project_id=project_id,
+                                                    workday__gte=date_begin,
+                                                    workday__lt=date_end)
+                    for task in tasks:
+                        writer.writerow([project_id, task.employee.display_name,
+                                         task.workday.strftime(REPORT_DATE_FORMAT), '%0.1f' % task.t_hours])
+                    # employees = tasks.values('employee').distinct()
+                    # for key, value in employees.iteritems():
         else:
             response['Content-Disposition'] = 'attachment; filename="empty.csv"'
 
