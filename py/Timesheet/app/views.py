@@ -460,25 +460,9 @@ def output(request):
                     tasks = TaskTime.objects.filter(workday__gte=date_begin,
                                                     workday__lt=date_end
                                                     ).order_by('project', 'employee')
-                    temp_id = ''
-                    count = 0.0
                     for task in tasks:
-                        # Sum and output the count.
-                        if not temp_id:
-                            temp_id = task.project.project_id
-                            count = task.t_hours
-                        elif temp_id != task.project.project_id:
-                            writer.writerow(['*', '*', '*', '%0.1f' % count])
-                            temp_id = task.project.project_id
-                            count = task.t_hours
-                        else:
-                            count += task.t_hours
-                        # Go on
                         writer.writerow([task.project.project_id, task.employee.display_name,
                                          task.workday.strftime(REPORT_DATE_FORMAT), '%0.1f' % task.t_hours])
-                    # Last project count output.
-                    writer.writerow(['*', '*', '*', '%0.1f' % count])
-
                 else:
                     tasks = TaskTime.objects.filter(project__project_id=project_id,
                                                     workday__gte=date_begin,
