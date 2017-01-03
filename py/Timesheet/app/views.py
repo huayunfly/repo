@@ -466,7 +466,7 @@ def output(request):
                 else:
                     tasks = TaskTime.objects.filter(project__project_id=project_id,
                                                     workday__gte=date_begin,
-                                                    workday__lt=date_end)
+                                                    workday__lt=date_end).order_by('employee')
                     for task in tasks:
                         writer.writerow([project_id, task.employee.display_name,
                                          task.workday.strftime(REPORT_DATE_FORMAT), '%0.1f' % task.t_hours])
