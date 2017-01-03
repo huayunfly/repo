@@ -353,15 +353,18 @@ def report(request):
         if (project_id is not None) and (date_begin is not None) and (date_end is not None):
             if PROJECT_ID_ALL == project_id:
                 for person in Person.objects.all():
+                    # Using aggregate to count the task time. Return None if there is no record.
                     total = TaskTime.objects.filter(
                         employee=person, workday__gte=date_begin,
                         workday__lt=date_end).aggregate(Sum('t_hours')).get('t_hours__sum')
+                    if total is not None:
+                        total = round(total, 1)
                     q_sets.append((person.display_name, '%s/%s' % (date_begin, date_end), total))
 
             else:
                 tasks = TaskTime.objects.filter(project__project_id=project_id,
                                                 workday__gte=date_begin,
-                                                workday__lt=date_end)
+                                                workday__lt=date_end).order_by('employee')
                 q_sets = [(task.employee.display_name,
                            task.workday.strftime(REPORT_DATE_FORMAT), task.t_hours) for task in tasks]
         # In order to allow non-dict objects to be serialized set the safe parameter to False.
@@ -455,7 +458,8 @@ def output(request):
                 writer.writerow(['Project', 'Name', 'Date', 'Task-time'])
                 if PROJECT_ID_ALL == project_id:
                     tasks = TaskTime.objects.filter(workday__gte=date_begin,
-                                                    workday__lt=date_end).order_by('project_id')
+                                                    workday__lt=date_end
+                                                    ).order_by('project', 'employee')
                     temp_id = ''
                     count = 0.0
                     for task in tasks:
