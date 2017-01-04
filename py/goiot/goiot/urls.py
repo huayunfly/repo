@@ -14,8 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url
-from django.contrib import admin
+from dataserver import views
+
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    # Uncomment the next line to enable the admin:
+    # url(r'^admin/', admin.site.urls),
+    url(r'^$', views.home, name='start'),
+    url(r'^da/api', views.da_api, name='da_api'),
 ]
