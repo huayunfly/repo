@@ -7,10 +7,40 @@
 """
 
 import minimalmodbus
+import RPi.GPIO as GPIO
+import time
+
+RPI_RS485_RSE_PIN = 12
+UDC3200_LOOP1_SP_ADDR = 0x78
+UDC3200_LOOP1_PV_ADDR = 0x40
 
 # Reference: http://stackoverflow.com/questions/17081442/python-modbus-library
 if __name__ == '__main__':
-    instrument = minimalmodbus.Instrument('/dev/ttyUSB1', 1)
-    temperature = instrument.read_float(0x40)
-    print(temperature)
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(RPI_RS485_RSE_PIN, GPIO.OUT)
+    
+    # UDC3200 address 2, baud 19200, loop1 PV address 0x40,
+    instrument = minimalmodbus.Instrument('/dev/ttyS0', 2)
+    instrument.handle_local_echo = False
+
+    for i in range(10):
+        try:
+            # loop1 SP address 0x78
+            # Write loop1 Set Point command: 0x02 10 00 78 00 02 04 42 c8 00 00 6f ef
+            # Read loop1 PV command: 0x02 04 00 40 00 02 70 2c
+            temperature = instrument.read_float(
+                UDC3200_LOOP1_PV_ADDR, functioncode=4, numberOfRegisters=2)
+            print('Current temperature: {}'.format(temperature))
+            time.sleep(1.0)
+            #instrument.write_float(UDC3200_LOOP1_SP_ADDR, 10.0 + i)
+        except ValueError as e:
+            print(e)
+            time.sleep(1.0)
+        except OSError:
+            GPIO.cleanup()
+            print('OSError, exit')
+            exit()
+            
+    GPIO.cleanup()
+    print('Test over.')
 
