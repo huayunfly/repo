@@ -20,6 +20,8 @@
 .. moduleauthor:: Jonas Berg <pyhys@users.sourceforge.net>
 
 MinimalModbus: A Python driver for the Modbus RTU and Modbus ASCII protocols via serial port (via RS485 or RS232).
+
+Modified by Yun Hua to support MAX485 halfduplex chip (using RPI GPIO to enable read and write), 2017.01.05
 """
 
 __author__   = 'Jonas Berg'
@@ -36,6 +38,12 @@ import serial
 import struct
 import sys
 import time
+
+# ----------------------------------------------------------------
+# Added by huayunfly@126.com in Jan. 5th, 2017
+import RPi.GPIO as GPIO
+RPI_RS485_RSE_PIN = 12
+# ----------------------------------------------------------------
 
 if sys.version > '3':
     import binascii
@@ -70,7 +78,7 @@ BYTESIZE = 8
 STOPBITS = 1
 """Default value for the number of stopbits (int)."""
 
-TIMEOUT  = 0.05
+TIMEOUT  = 0.5
 """Default value for the timeout value in seconds (float)."""
 
 CLOSE_PORT_AFTER_EACH_CALL = False
@@ -889,8 +897,25 @@ class Instrument():
 
         # Write request
         latest_write_time = time.time()
+
+        # ----------------------------------------------------------------
+        # Enable RS-485 send. Added by huayunfly@126.com in Jan. 5th, 2017
+        GPIO.output(RPI_RS485_RSE_PIN, True)
+        self.serial.reset_input_buffer()
+        if self.debug:
+            for by in request:
+                print('0x%x' % by)
+        # ----------------------------------------------------------------
         
         self.serial.write(request)
+        
+        # ----------------------------------------------------------------
+        # Make sure the output buffer is empty, then enable MAX485 read.
+        # Added by huayunfly@126.com in Jan. 6th, 2017
+        self.serial.flush()
+        GPIO.output(RPI_RS485_RSE_PIN, False)
+        # ----------------------------------------------------------------
+        
 
         # Read and discard local echo
         if self.handle_local_echo:
@@ -904,9 +929,10 @@ class Instrument():
                     'Request: {!r} ({} bytes), local echo: {!r} ({} bytes).' 
                 text = template.format(request, len(request), localEchoToDiscard, len(localEchoToDiscard))
                 raise IOError(text)
-
+         
         # Read response
         answer = self.serial.read(number_of_bytes_to_read)
+        
         _LATEST_READ_TIMES[self.serial.port] = time.time()
 
         if self.close_port_after_each_call:
