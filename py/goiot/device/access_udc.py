@@ -22,8 +22,9 @@ if __name__ == '__main__':
     # UDC3200 address 2, baud 19200, loop1 PV address 0x40,
     instrument = minimalmodbus.Instrument('/dev/ttyS0', 2)
     instrument.handle_local_echo = False
+    instrument.debug = False
 
-    for i in range(10):
+    while True:
         try:
             # loop1 SP address 0x78
             # Write loop1 Set Point command: 0x02 10 00 78 00 02 04 42 c8 00 00 6f ef
@@ -32,14 +33,14 @@ if __name__ == '__main__':
                 UDC3200_LOOP1_PV_ADDR, functioncode=4, numberOfRegisters=2)
             print('Current temperature: {}'.format(temperature))
             time.sleep(1.0)
-            #instrument.write_float(UDC3200_LOOP1_SP_ADDR, 10.0 + i)
+            #instrument.write_float(UDC3200_LOOP1_SP_ADDR, 11.9)
         except ValueError as e:
             print(e)
             time.sleep(1.0)
-        except OSError:
-            GPIO.cleanup()
-            print('OSError, exit')
-            exit()
+        except OSError as e:
+            print(e)
+            print('OSError........................')
+            time.sleep(1.0)
             
     GPIO.cleanup()
     print('Test over.')
