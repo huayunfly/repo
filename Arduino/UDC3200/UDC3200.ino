@@ -1,3 +1,7 @@
+/* Honeywell UDC3200 reading PV(Modbus addr 0x40) via RS-485
+@Author: Yun Hua, huayunfly@126.com
+@Date: 2017.01.05
+*/
 #include <ModbusMaster.h>
 
 ModbusMaster node;
@@ -22,16 +26,20 @@ void loop() {
   i++;
 
   // Set word 0 of TX buffer to least-significant word of counter (bits 15..0)
-  node.setTransmitBuffer(0, lowWord(i));
+  //node.setTransmitBuffer(0, lowWord(i));
 
   // Set word 1 of TX buffer to most-significant word of counter (bits 31..16)
-  node.setTransmitBuffer(1, highWord(i));
+  //node.setTransmitBuffer(1, highWord(i));
 
-  // Slave: write TX buffer to (2) 16-bit registers starting at register 0
-  // result = node.writeMultipleRegisters(0, 2);
+  // Slave: write TX buffer to (2) 16-bit registers (IEEE 32bit float 100.0) starting at register 0x78 (Loop1 SP)
+  node.setTransmitBuffer(0, 0x42C8);
+  node.setTransmitBuffer(1, 0x0000);
+  result = node.writeMultipleRegisters(0x78, 2);
+  Serial.println(result, HEX); // Error code 0x06 may returned for the Slave Device Busy
+  delay(5000);
 
-  // Slave: read (2) 16-bit registers starting at register 0x40 to RX buffer
-  result = node.readInputRegisters(0x40, 2);
+  // Slave: read (2) 16-bit registers (IEEE 32bit float) starting at register 0x40 (Loop1 PV) to RX buffer
+  //result = node.readInputRegisters(0x40, 2);
   
   // do something with data if read is successful
   if (result == node.ku8MBSuccess)
@@ -47,9 +55,9 @@ void loop() {
     // binary number: implied 1 + 0*2^-1 + 0*2e-2 + 0*2e-3 + 1*2e-4 + 0*2e-5 + 0*2e-6 + 1*2e-7
     // exponent: 1*2^7 + ... + 1*2^1 + 1*2^0 = 131; exponent = 131 - 127(bias) = 4
     // float value = binary number * 2^exponent = 17.24
-    Serial.println(data[0], HEX);
+    //Serial.println(data[0], HEX);
     delay(100);
-    Serial.println(data[1], HEX);
+    //Serial.println(data[1], HEX);
     delay(100);
   }
 
