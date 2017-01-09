@@ -78,7 +78,7 @@ BYTESIZE = 8
 STOPBITS = 1
 """Default value for the number of stopbits (int)."""
 
-TIMEOUT  = 0.5
+TIMEOUT  = 0.1
 """Default value for the timeout value in seconds (float)."""
 
 CLOSE_PORT_AFTER_EACH_CALL = False
@@ -901,10 +901,8 @@ class Instrument():
         # ----------------------------------------------------------------
         # Enable RS-485 send. Added by huayunfly@126.com in Jan. 5th, 2017
         GPIO.output(RPI_RS485_RSE_PIN, True)
-        self.serial.reset_input_buffer()
-        if self.debug:
-            for by in request:
-                print('0x%x' % by)
+        time.sleep(0.02) # Avoid the redundant header byte
+        self.serial.reset_input_buffer() # Clear some noise bytes
         # ----------------------------------------------------------------
         
         self.serial.write(request)
@@ -914,6 +912,7 @@ class Instrument():
         # Added by huayunfly@126.com in Jan. 6th, 2017
         self.serial.flush()
         GPIO.output(RPI_RS485_RSE_PIN, False)
+        #time.sleep(0.02) # NOT larger than 'UDC3200->COM->TX DELAY 20ms'
         # ----------------------------------------------------------------
         
 
