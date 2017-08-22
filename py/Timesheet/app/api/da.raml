@@ -1,0 +1,54 @@
+#%RAML 1.0
+---
+title: Device Data Access API
+baseUri: http://api.yashentech.com/da/{version}
+version: v1
+
+/users:
+  /authors:
+  /books:
+
+/data:
+  get:
+  put:
+  /{dataIndex}:
+    get:
+      description: Retrieve a specific data by index
+      queryParameters:
+        access_token:
+          displayName: Access Token
+          type: string
+          description: Token giving you permission to make call.
+          required: true
+        last_updated:
+          displayName: Last Updated
+          type: datetime
+          description: Retrieve the new data after the last updated time.
+          required: false
+          example: |1341533193
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "data": {
+                    "dataIndex": 90,
+                    "dataId": "TICA_101",
+                    "description": null,
+                    "datetime": 1341533193,
+                    "value": 200.1
+                  },
+                  "op_result": true,
+                }
+    put:
+      # http://baseUri/data/110?access_token=ACCESS TOKEN
+      queryParameters:
+        access_token:
+          displayName: Access Token
+          type: string
+          description: Token giving you permission to make call.
+          required: true
+        value: number | string
+        type: string
+        update_time: datetime
