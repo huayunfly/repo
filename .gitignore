@@ -1,1 +1,22 @@
 # git ignore
+*.pyc
+DjangoWebProject1/
+ExpressApp1/
+py/.idea/
+py/Timesheet/.idea/
+py/Timesheet/.vs/
+py/Timesheet/Timesheet.pyproj
+py/Timesheet/Timesheet.sln
+py/Timesheet/app/dbdata/
+py/Timesheet/app/migrations/0001_initial.py
+py/Timesheet/app/migrations/0002_auto_20161215_0922.py
+py/Timesheet/bin/
+py/Timesheet/db.sqlite3
+py/Timesheet/obj/
+py/Timesheet/readme.mht
+py/Timesheet/requirements.txt
+py/Timesheet/static/
+py/Timesheet/web.config
+py/Timesheet/web.debug.config
+py/goiot/.idea/
+py/test/~temp/
